@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Nuevo Usuario' if not user else 'Editar: ' + user.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-person-gear text-accent"></i> {{ 'Nuevo Usuario' if not user else 'Editar Usuario' }}</h1>
+</div>
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control" required value="{{ user.name if user else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control" required value="{{ user.email if user else '' }}"
+                     {% if user %}readonly{% endif %}>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Contraseña {% if not user %}<span class="text-danger">*</span>{% else %}<small class="text-muted">(dejar vacío para no cambiar)</small>{% endif %}</label>
+              <input type="password" name="password" class="form-control" {% if not user %}required{% endif %} autocomplete="new-password">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Rol</label>
+              <select name="role" class="form-select">
+                <option value="seller" {% if user and user.role == 'seller' %}selected{% endif %}>Vendedor</option>
+                <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>Administrador</option>
+              </select>
+            </div>
+            {% if user %}
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="active" id="activeCheck" {% if user.active %}checked{% endif %}>
+                <label class="form-check-label" for="activeCheck">Usuario activo</label>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg"></i> Guardar</button>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-people text-accent"></i> Clientes</h1>
+    <div class="page-subtitle">{{ customers|length }} cliente{{ 's' if customers|length != 1 }}</div>
+  </div>
+  <a href="{{ url_for('customers.new_customer') }}" class="btn btn-primary">
+    <i class="bi bi-person-plus"></i> Nuevo Cliente
+  </a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="GET" class="d-flex gap-2">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o teléfono…" value="{{ search }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      {% if search %}<a href="{{ url_for('customers.index') }}" class="btn btn-outline-secondary">Limpiar</a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if customers %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>DNI/CUIT</th><th>Compras</th><th>Total Gastado</th><th></th></tr></thead>
+        <tbody>
+          {% for c in customers %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width:32px;height:32px;font-size:13px;">{{ c.name[0].upper() }}</div>
+                <span class="fw-500">{{ c.name }}</span>
+              </div>
+            </td>
+            <td>{{ c.phone or '—' }}</td>
+            <td>{{ c.email or '—' }}</td>
+            <td><code style="font-size:11px;">{{ c.cuit_dni or '—' }}</code></td>
+            <td><span class="badge bg-light text-dark">{{ c.sales.count() }}</span></td>
+            <td class="fw-600 text-accent">{{ c.total_purchases | currency }}</td>
+            <td>
+              <a href="{{ url_for('customers.edit_customer', cid=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('customers.delete_customer', cid=c.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        data-confirm="¿Eliminar a {{ c.name }}?"><i class="bi bi-trash3"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="bi bi-people"></i><p>No hay clientes registrados.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

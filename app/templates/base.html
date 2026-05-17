@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Garage Abierto{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% if current_user.is_authenticated %}
+<div class="wrapper">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <i class="bi bi-droplet-fill brand-icon"></i>
+        <div>
+          <span class="brand-name">GARAGE</span>
+          <span class="brand-sub">ABIERTO</span>
+        </div>
+      </div>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="nav-section">Principal</li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('admin.') %}active{% endif %}">
+        <a href="{{ url_for('admin.dashboard') }}">
+          <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-section">Inventario</li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('inventory.') %}active{% endif %}">
+        <a href="{{ url_for('inventory.index') }}">
+          <i class="bi bi-box-seam"></i><span>Productos</span>
+        </a>
+      </li>
+      {% if current_user.is_admin %}
+      <li class="{% if request.endpoint == 'inventory.categories' %}active{% endif %}">
+        <a href="{{ url_for('inventory.categories') }}">
+          <i class="bi bi-tags"></i><span>Categorías</span>
+        </a>
+      </li>
+      {% endif %}
+
+      <li class="nav-section">Comercial</li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('sales.') %}active{% endif %}">
+        <a href="{{ url_for('sales.index') }}">
+          <i class="bi bi-receipt"></i><span>Ventas</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('customers.') %}active{% endif %}">
+        <a href="{{ url_for('customers.index') }}">
+          <i class="bi bi-people"></i><span>Clientes</span>
+        </a>
+      </li>
+
+      {% if current_user.is_admin %}
+      <li class="nav-section">Administración</li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}">
+        <a href="{{ url_for('suppliers.index') }}">
+          <i class="bi bi-truck"></i><span>Proveedores</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}">
+        <a href="{{ url_for('employees.index') }}">
+          <i class="bi bi-person-badge"></i><span>Empleados</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('admin.users') %}active{% endif %}">
+        <a href="{{ url_for('admin.users') }}">
+          <i class="bi bi-shield-lock"></i><span>Usuarios</span>
+        </a>
+      </li>
+      {% endif %}
+
+      <li class="nav-section">Extra</li>
+      <li>
+        <a href="{{ url_for('display.index') }}" target="_blank">
+          <i class="bi bi-display"></i><span>Pantalla Clientes</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ current_user.name[0].upper() }}</div>
+        <div>
+          <div class="user-name">{{ current_user.name }}</div>
+          <div class="user-role">{{ 'Administrador' if current_user.is_admin else 'Vendedor' }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout" title="Cerrar sesión">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="main-content">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <button id="sidebarToggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+      <div class="topbar-right">
+        <a href="{{ url_for('sales.new_sale') }}" class="btn btn-success btn-sm">
+          <i class="bi bi-cart-plus"></i> Nueva Venta
+        </a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('inventory.new_product') }}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg"></i> Producto
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+        <i class="bi bi-{% if category == 'success' %}check-circle-fill{% elif category in ['danger','error'] %}x-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page content -->
+    <div class="page-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+{% else %}
+
+{% block auth_content %}{% endblock %}
+
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

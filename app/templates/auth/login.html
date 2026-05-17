@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block body_class %}login-body{% endblock %}
+{% block auth_content %}
+<div class="login-bg-pattern"></div>
+<div class="login-card">
+  <div class="login-logo">
+    <i class="bi bi-droplet-fill brand-icon text-accent"></i>
+    <div class="brand-name">GARAGE ABIERTO</div>
+    <div class="login-logo .brand-tagline" style="font-size:12px;color:#8b949e;letter-spacing:2px;margin-top:4px;">ARTÍCULOS DE BAÑO</div>
+  </div>
+
+  <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ 'danger' if category == 'error' else category }} mb-3" style="font-size:13px;">
+        {{ message }}
+      </div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" class="form-control" placeholder="usuario@garageabierto.com" required autofocus>
+    </div>
+    <div class="mb-4">
+      <label class="form-label">Contraseña</label>
+      <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 py-2">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+    </button>
+  </form>
+
+  <p class="text-center mt-4 mb-0" style="font-size:12px;color:#484f58;">
+    © {{ 2024 }} Garage Abierto — Todos los derechos reservados
+  </p>
+</div>
+{% endblock %}

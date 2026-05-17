@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Categorías{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-tags text-accent"></i> Categorías</h1>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Nombre</th><th>Ícono</th><th>Productos</th></tr></thead>
+            <tbody>
+              {% for cat in categories %}
+              <tr>
+                <td class="fw-500">{{ cat.name }}</td>
+                <td><i class="{{ cat.icon }}" style="color:{{ cat.color }};font-size:20px;"></i></td>
+                <td><span class="badge bg-light text-dark">{{ cat.products.count() }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-plus-circle text-accent"></i> Nueva Categoría</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('inventory.new_category') }}">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ícono Bootstrap</label>
+            <input type="text" name="icon" class="form-control" value="bi-box" placeholder="bi-box">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Color</label>
+            <input type="color" name="color" class="form-control form-control-color" value="#2196F3">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Crear Categoría</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

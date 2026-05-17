@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="120">
+  <title>GARAGE ABIERTO — Artículos de Baño</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #d4a853;
+      --gold-light: #f0d08a;
+      --bg: #08090e;
+      --surface: #0f1117;
+      --surface2: #171c24;
+      --border: #1e2535;
+      --text: #e8edf4;
+      --text-muted: #6b7a92;
+      --accent: #2d9cdb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    .display-header {
+      background: linear-gradient(135deg, #0a0e14 0%, #111827 60%, #0a0e14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-brand { display: flex; align-items: center; gap: 16px; }
+    .header-brand .drop-icon { font-size: 42px; color: var(--gold); filter: drop-shadow(0 0 12px rgba(212,168,83,0.5)); }
+    .brand-name { font-size: 28px; font-weight: 800; letter-spacing: 4px; color: #f0f6fc; }
+    .brand-tagline { font-size: 11px; color: var(--gold); letter-spacing: 4px; text-transform: uppercase; margin-top: 2px; }
+
+    .header-center {
+      text-align: center;
+    }
+    .header-slogan {
+      font-size: 15px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .header-right { text-align: right; font-size: 13px; color: var(--text-muted); }
+    .header-time { font-size: 28px; font-weight: 600; color: var(--text); }
+
+    /* ── TICKER ── */
+    .ticker-bar {
+      background: linear-gradient(90deg, #0f1117, #1a2035, #0f1117);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 40s linear infinite;
+      padding-left: 100%;
+    }
+    .ticker-inner span {
+      margin-right: 80px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .ticker-inner span strong { color: var(--gold); }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    /* ── CATEGORY TABS ── */
+    .cat-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 20px 40px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0;
+      padding: 7px 18px;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface);
+    }
+    .cat-tab:hover, .cat-tab.active {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── PRODUCT GRID ── */
+    .products-section { padding: 0 40px 40px; }
+    .cat-section { margin-bottom: 48px; }
+    .cat-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      animation: fadeIn 0.4s ease forwards;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212,168,83,0.4);
+      box-shadow: 0 8px 32px rgba(212,168,83,0.12);
+    }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    .product-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--surface2);
+    }
+    .product-img-placeholder {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, var(--surface2), #1e2a3a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      color: rgba(45,156,219,0.3);
+    }
+    .product-body { padding: 14px 16px; }
+    .product-brand { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .product-name { font-size: 14px; font-weight: 600; color: var(--text); margin: 4px 0 10px; line-height: 1.35; }
+    .product-price {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: -0.5px;
+    }
+
+    /* ── FOOTER ── */
+    .display-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 20px;
+      font-size: 16px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .display-footer strong { color: var(--gold); }
+
+    /* ── EMPTY STATE ── */
+    .display-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-muted);
+    }
+    .display-empty i { font-size: 80px; display: block; margin-bottom: 20px; opacity: .2; }
+    .display-empty p { font-size: 18px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body class="display-body">
+
+<!-- HEADER -->
+<header class="display-header">
+  <div class="header-brand">
+    <i class="bi bi-droplet-fill drop-icon"></i>
+    <div>
+      <div class="brand-name">GARAGE ABIERTO</div>
+      <div class="brand-tagline">Artículos de Baño</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="header-slogan">Calidad · Diseño · Confort</div>
+  </div>
+  <div class="header-right">
+    <div class="header-time" id="clock">--:--</div>
+    <div id="dateDisplay" style="font-size:13px;"></div>
+  </div>
+</header>
+
+<!-- TICKER -->
+{% if featured %}
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    {% for p in featured %}
+    <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
+    {% endfor %}
+    {% for p in featured %}
+    <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- CATEGORY TABS -->
+{% if categories %}
+<div class="cat-tabs">
+  <div class="cat-tab active" onclick="filterCat('all', this)">
+    <i class="bi bi-grid-3x3-gap"></i> Todos
+  </div>
+  {% for cat in categories %}
+  {% if products | selectattr('category_id', 'eq', cat.id) | list %}
+  <div class="cat-tab" onclick="filterCat('cat-{{ cat.id }}', this)">
+    <i class="{{ cat.icon }}"></i> {{ cat.name }}
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- PRODUCTS -->
+<div class="products-section">
+  {% if categories %}
+    {% for cat in categories %}
+    {% set cat_products = products | selectattr('category_id', 'eq', cat.id) | list %}
+    {% if cat_products %}
+    <div class="cat-section" id="cat-{{ cat.id }}">
+      <div class="cat-title">
+        <i class="{{ cat.icon }}"></i> {{ cat.name }}
+      </div>
+      <div class="product-grid">
+        {% for p in cat_products %}
+        <div class="product-card">
+          {% if p.image_src %}
+          <img src="{{ p.image_src }}" class="product-img" alt="{{ p.name }}">
+          {% else %}
+          <div class="product-img-placeholder"><i class="bi bi-droplet-half"></i></div>
+          {% endif %}
+          <div class="product-body">
+            <div class="product-brand">{{ p.brand or cat.name }}</div>
+            <div class="product-name">{{ p.name }}</div>
+            <div class="product-price">{{ p.price | currency }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  {% else %}
+    {% if products %}
+    <div class="product-grid mt-4">
+      {% for p in products %}
+      <div class="product-card">
+        {% if p.image_src %}
+        <img src="{{ p.image_src }}" class="product-img" alt="{{ p.name }}">
+        {% else %}
+        <div class="product-img-placeholder"><i class="bi bi-droplet-half"></i></div>
+        {% endif %}
+        <div class="product-body">
+          <div class="product-brand">{{ p.brand or '' }}</div>
+          <div class="product-name">{{ p.name }}</div>
+          <div class="product-price">{{ p.price | currency }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="display-empty">
+      <i class="bi bi-box-seam"></i>
+      <p>Catálogo en preparación…</p>
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+<!-- FOOTER -->
+<footer class="display-footer">
+  <strong>GARAGE ABIERTO</strong> · Consultá a nuestros vendedores para más información · Precios expresados en pesos argentinos
+</footer>
+
+<script>
+// Clock
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = hh + ':' + mm;
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('dateDisplay').textContent = `${days[now.getDay()]} ${now.getDate()} de ${months[now.getMonth()]}`;
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// Category filter
+function filterCat(catId, el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (catId === 'all') {
+    document.querySelectorAll('.cat-section').forEach(s => s.style.display = 'block');
+  } else {
+    document.querySelectorAll('.cat-section').forEach(s => {
+      s.style.display = s.id === catId ? 'block' : 'none';
+    });
+  }
+}
+</script>
+</body>
+</html>

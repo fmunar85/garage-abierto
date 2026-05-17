@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Ventas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-receipt text-accent"></i> Ventas</h1>
+    <div class="page-subtitle">{{ sales.total }} venta{{ 's' if sales.total != 1 }}</div>
+  </div>
+  <a href="{{ url_for('sales.new_sale') }}" class="btn btn-success">
+    <i class="bi bi-cart-plus"></i> Nueva Venta
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <select name="status" class="form-select">
+          <option value="">Todos los estados</option>
+          <option value="completed" {% if status=='completed' %}selected{% endif %}>Completadas</option>
+          <option value="pending" {% if status=='pending' %}selected{% endif %}>Pendientes</option>
+          <option value="cancelled" {% if status=='cancelled' %}selected{% endif %}>Canceladas</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="payment" class="form-select">
+          <option value="">Todos los métodos</option>
+          <option value="efectivo" {% if payment=='efectivo' %}selected{% endif %}>Efectivo</option>
+          <option value="tarjeta" {% if payment=='tarjeta' %}selected{% endif %}>Tarjeta</option>
+          <option value="transferencia" {% if payment=='transferencia' %}selected{% endif %}>Transferencia</option>
+          <option value="cuenta_corriente" {% if payment=='cuenta_corriente' %}selected{% endif %}>Cta. Corriente</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="from" class="form-control" value="{{ date_from }}" placeholder="Desde">
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="to" class="form-control" value="{{ date_to }}" placeholder="Hasta">
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filtrar</button>
+        <a href="{{ url_for('sales.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if sales.items %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr>
+          <th>#</th><th>Fecha</th><th>Cliente</th><th>Vendedor</th>
+          <th>Método</th><th>Artículos</th><th>Total</th><th>Estado</th><th></th>
+        </tr></thead>
+        <tbody>
+          {% for sale in sales.items %}
+          <tr>
+            <td><a href="{{ url_for('sales.sale_detail', sid=sale.id) }}" class="fw-600 text-accent">#{{ sale.id }}</a></td>
+            <td style="font-size:13px;">{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ sale.customer.name if sale.customer else '<span class="text-muted fst-italic">Mostrador</span>' | safe }}</td>
+            <td style="font-size:13px;">{{ sale.seller.name }}</td>
+            <td>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-{% if sale.payment_method == 'efectivo' %}cash{% elif sale.payment_method == 'tarjeta' %}credit-card{% else %}bank{% endif %}"></i>
+                {{ sale.payment_method | capitalize }}
+              </span>
+            </td>
+            <td class="text-center">{{ sale.items.count() }}</td>
+            <td class="fw-700 text-accent">{{ sale.total | currency }}</td>
+            <td>
+              {% if sale.status == 'completed' %}<span class="badge badge-stock-ok">Completada</span>
+              {% elif sale.status == 'cancelled' %}<span class="badge badge-stock-out">Cancelada</span>
+              {% else %}<span class="badge badge-stock-low">Pendiente</span>{% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('sales.sale_detail', sid=sale.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if sales.pages > 1 %}
+    <div class="p-3">
+      <nav>
+        <ul class="pagination justify-content-center mb-0">
+          <li class="page-item {% if not sales.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ sales.prev_num }}&status={{ status }}&payment={{ payment }}&from={{ date_from }}&to={{ date_to }}">‹</a>
+          </li>
+          {% for p in sales.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
+            {% if p %}<li class="page-item {% if p == sales.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&status={{ status }}&payment={{ payment }}&from={{ date_from }}&to={{ date_to }}">{{ p }}</a>
+            </li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+          {% endfor %}
+          <li class="page-item {% if not sales.has_next %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ sales.next_num }}&status={{ status }}&payment={{ payment }}&from={{ date_from }}&to={{ date_to }}">›</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-receipt"></i>
+      <p>No hay ventas con los filtros seleccionados.</p>
+      <a href="{{ url_for('sales.new_sale') }}" class="btn btn-success mt-2">
+        <i class="bi bi-cart-plus"></i> Registrar primera venta
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-speedometer2 text-accent"></i> Dashboard</h1>
+    <div class="page-subtitle">Resumen de actividad de Garage Abierto</div>
+  </div>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-box-seam"></i></div>
+      <div>
+        <div class="stat-label">Productos Activos</div>
+        <div class="stat-value">{{ total_products }}</div>
+        <div class="stat-sub">en stock</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+      <div>
+        <div class="stat-label">Bajo Stock</div>
+        <div class="stat-value">{{ low_stock_products|length }}</div>
+        <div class="stat-sub">requieren atención</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-receipt"></i></div>
+      <div>
+        <div class="stat-label">Ventas Hoy</div>
+        <div class="stat-value">{{ today_sales_count }}</div>
+        <div class="stat-sub">transacciones</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon amber"><i class="bi bi-currency-dollar"></i></div>
+      <div>
+        <div class="stat-label">Facturación Hoy</div>
+        <div class="stat-value" style="font-size:18px;">{{ today_revenue | currency }}</div>
+        <div class="stat-sub">total del día</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Monthly chart -->
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-bar-chart-line text-accent"></i> Ventas Mensuales</div>
+      <div class="card-body">
+        <canvas id="chartMonthly" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- Category pie -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-pie-chart text-accent"></i> Productos por Categoría</div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="chartCat" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Recent sales -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history text-accent"></i> Últimas Ventas</span>
+        <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_sales %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr>
+              <th>#</th><th>Fecha</th><th>Cliente</th><th>Método</th><th>Total</th><th>Estado</th>
+            </tr></thead>
+            <tbody>
+              {% for sale in recent_sales %}
+              <tr>
+                <td><a href="{{ url_for('sales.sale_detail', sid=sale.id) }}" class="fw-600 text-accent">#{{ sale.id }}</a></td>
+                <td>{{ sale.created_at.strftime('%d/%m %H:%M') }}</td>
+                <td>{{ sale.customer.name if sale.customer else '<span class="text-muted">Mostrador</span>' | safe }}</td>
+                <td><span class="badge bg-light text-dark">{{ sale.payment_method | capitalize }}</span></td>
+                <td class="fw-600">{{ sale.total | currency }}</td>
+                <td>
+                  {% if sale.status == 'completed' %}<span class="badge badge-stock-ok">Completada</span>
+                  {% elif sale.status == 'cancelled' %}<span class="badge badge-stock-out">Cancelada</span>
+                  {% else %}<span class="badge badge-stock-low">Pendiente</span>{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-receipt"></i><p>No hay ventas registradas aún.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Low stock alerts -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-exclamation-triangle text-warning"></i> Alertas de Stock</span>
+        <a href="{{ url_for('inventory.index') }}?stock=low" class="btn btn-sm btn-outline-warning">Ver todos</a>
+      </div>
+      <div class="card-body p-0">
+        {% if low_stock_products %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Producto</th><th>SKU</th><th>Stock</th><th>Mín.</th></tr></thead>
+            <tbody>
+              {% for p in low_stock_products %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('inventory.product_detail', pid=p.id) }}" class="text-decoration-none text-dark fw-500">
+                    {{ p.name[:30] }}{% if p.name|length > 30 %}…{% endif %}
+                  </a>
+                </td>
+                <td><code style="font-size:11px;">{{ p.sku }}</code></td>
+                <td>
+                  <span class="badge {% if p.stock == 0 %}badge-stock-out{% else %}badge-stock-low{% endif %}">
+                    {{ p.stock }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ p.min_stock }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-check-circle" style="color:var(--success)"></i><p>Todo el stock en orden 🎉</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const monthlyData = {{ monthly_data | safe }};
+const catData = {{ cat_data | safe }};
+
+// Monthly bar chart
+new Chart(document.getElementById('chartMonthly'), {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => d.month),
+    datasets: [{
+      label: 'Ventas ($)',
+      data: monthlyData.map(d => d.total),
+      backgroundColor: 'rgba(45,156,219,0.7)',
+      borderColor: '#2d9cdb',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        ticks: {
+          callback: v => '$' + (v/1000).toFixed(0) + 'k',
+          font: { family: 'Poppins', size: 11 }
+        },
+        grid: { color: '#f0f2f4' }
+      },
+      x: { ticks: { font: { family: 'Poppins', size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+// Category doughnut
+const COLORS = ['#2d9cdb','#d4a853','#3fb950','#f85149','#e3b341','#7c3aed','#06b6d4','#f97316'];
+new Chart(document.getElementById('chartCat'), {
+  type: 'doughnut',
+  data: {
+    labels: catData.map(d => d.name),
+    datasets: [{
+      data: catData.map(d => d.count),
+      backgroundColor: COLORS,
+      borderWidth: 2,
+      borderColor: '#fff',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 11 }, padding: 10 } }
+    }
+  }
+});
+</script>
+{% endblock %}

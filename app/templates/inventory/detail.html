@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-1">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('inventory.index') }}">Inventario</a></li>
+    <li class="breadcrumb-item active">{{ product.name[:40] }}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+  <h1 class="page-title">
+    {% if not product.active %}<span class="badge bg-secondary me-2" style="font-size:14px;">Inactivo</span>{% endif %}
+    {{ product.name }}
+  </h1>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('inventory.edit_product', pid=product.id) }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil"></i> Editar
+    </a>
+    {% if product.active %}
+    <form method="POST" action="{{ url_for('inventory.delete_product', pid=product.id) }}">
+      <button type="submit" class="btn btn-outline-danger btn-sm"
+              data-confirm="¿Dar de baja a {{ product.name }}?">
+        <i class="bi bi-archive"></i> Dar de Baja
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Info -->
+  <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4 text-center">
+            {% if product.image_src %}
+            <img src="{{ product.image_src }}" class="img-fluid rounded" style="max-height:220px;object-fit:cover;" alt="">
+            {% else %}
+            <div style="height:220px;background:linear-gradient(135deg,#e8edf2,#c8d2dc);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:64px;color:var(--accent);">
+              <i class="bi bi-droplet-half"></i>
+            </div>
+            {% endif %}
+          </div>
+          <div class="col-md-8">
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">SKU</div>
+                <div class="fw-600"><code>{{ product.sku }}</code></div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Marca</div>
+                <div>{{ product.brand or '—' }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Categoría</div>
+                <div>{{ product.category_obj.name if product.category_obj else '—' }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Proveedor</div>
+                <div>{{ product.supplier.name if product.supplier else '—' }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Precio Venta</div>
+                <div class="fs-5 fw-700 text-accent">{{ product.price | currency }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Precio Costo</div>
+                <div class="fs-5 fw-600">{{ product.cost_price | currency }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Margen</div>
+                <div class="fw-600" style="color:var(--success);">{{ product.profit_margin }}%</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Destacado</div>
+                <div>{% if product.featured %}<i class="bi bi-star-fill text-warning"></i> Sí{% else %}No{% endif %}</div>
+              </div>
+            </div>
+            {% if product.description %}
+            <div class="mt-3">
+              <div class="text-muted" style="font-size:12px;font-weight:600;text-transform:uppercase;">Descripción</div>
+              <p class="mt-1 mb-0" style="font-size:14px;">{{ product.description }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales history -->
+    <div class="card">
+      <div class="card-header"><i class="bi bi-clock-history text-accent"></i> Últimas Ventas de este Producto</div>
+      <div class="card-body p-0">
+        {% if recent_items %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Venta #</th><th>Fecha</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              {% for item in recent_items %}
+              <tr>
+                <td><a href="{{ url_for('sales.sale_detail', sid=item.sale_id) }}" class="text-accent">#{{ item.sale_id }}</a></td>
+                <td>{{ item.sale.created_at.strftime('%d/%m/%Y') }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price | currency }}</td>
+                <td class="fw-600">{{ item.subtotal | currency }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-receipt"></i><p>Sin ventas registradas.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock panel -->
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-boxes text-accent"></i> Control de Stock</div>
+      <div class="card-body text-center">
+        <div class="display-4 fw-700 {% if product.stock == 0 %}text-danger{% elif product.low_stock %}text-warning{% else %}text-success{% endif %}">
+          {{ product.stock }}
+        </div>
+        <div class="text-muted mb-1">unidades en stock</div>
+        <div class="text-muted" style="font-size:13px;">Mínimo configurado: <strong>{{ product.min_stock }}</strong></div>
+        <div class="mt-2">
+          <span class="badge {% if product.stock == 0 %}badge-stock-out{% elif product.low_stock %}badge-stock-low{% else %}badge-stock-ok{% endif %} px-3 py-2">
+            {% if product.stock == 0 %}Sin Stock{% elif product.low_stock %}Stock Bajo{% else %}Stock OK{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><i class="bi bi-sliders text-accent"></i> Ajustar Stock</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('inventory.adjust_stock', pid=product.id) }}">
+          <div class="mb-3">
+            <label class="form-label">Operación</label>
+            <select name="operation" class="form-select">
+              <option value="add">Agregar unidades</option>
+              <option value="subtract">Retirar unidades</option>
+              <option value="set">Establecer cantidad exacta</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Cantidad</label>
+            <input type="number" name="amount" class="form-control" min="0" value="1" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-lg"></i> Aplicar Ajuste
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

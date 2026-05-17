@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios del Sistema{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-shield-lock text-accent"></i> Usuarios del Sistema</h1>
+  <a href="{{ url_for('admin.new_user') }}" class="btn btn-primary">
+    <i class="bi bi-person-plus"></i> Nuevo Usuario
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if users %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Alta</th><th>Ventas</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width:36px;height:36px;font-size:14px;">{{ u.name[0].upper() }}</div>
+                <span class="fw-500">{{ u.name }}</span>
+              </div>
+            </td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                {{ 'Admin' if u.role == 'admin' else 'Vendedor' }}
+              </span>
+            </td>
+            <td style="font-size:13px;">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+            <td><span class="badge bg-light text-dark">{{ u.sales.count() }}</span></td>
+            <td>
+              {% if u.active %}<span class="badge badge-stock-ok">Activo</span>
+              {% else %}<span class="badge badge-stock-out">Inactivo</span>{% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('admin.edit_user', uid=u.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin.delete_user', uid=u.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        data-confirm="¿Eliminar al usuario {{ u.name }}?">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="bi bi-people"></i><p>No hay usuarios registrados.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

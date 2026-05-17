@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Venta{% endblock %}
+{% block extra_css %}
+<style>
+  .page-content { padding: 16px 24px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-2">
+  <h1 class="page-title"><i class="bi bi-cart-plus text-accent"></i> Nueva Venta</h1>
+</div>
+
+<form id="saleForm" method="POST" action="{{ url_for('sales.new_sale') }}">
+  <input type="hidden" name="items_json" id="itemsJson" value="[]">
+
+  <div class="pos-wrapper">
+
+    <!-- LEFT: Products -->
+    <div class="pos-left">
+      <!-- Search bar -->
+      <div class="pos-search-wrapper">
+        <i class="bi bi-search"></i>
+        <input type="text" class="form-control pos-search" id="posSearchInput"
+               placeholder="Buscar producto por nombre, SKU o marca…"
+               oninput="posSearch(this.value)" autocomplete="off">
+      </div>
+
+      <!-- Product grid results -->
+      <div class="pos-products">
+        <div class="row g-2" id="posProductGrid">
+          <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-search fs-1 d-block mb-3" style="opacity:.3;"></i>
+            <p>Buscá un producto para agregarlo al carrito.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Cart -->
+    <div class="pos-right">
+      <div class="cart-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-cart3 text-accent"></i> Carrito</span>
+        <span id="cartCount" class="badge bg-primary rounded-pill">0</span>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <div id="cartEmpty" class="text-center py-5 text-muted">
+          <i class="bi bi-cart-x fs-2 d-block mb-2" style="opacity:.4;"></i>
+          <small>El carrito está vacío</small>
+        </div>
+      </div>
+
+      <div class="cart-footer">
+        <!-- Discount -->
+        <div class="mb-3">
+          <label class="form-label" style="font-size:13px;">Descuento (%)</label>
+          <input type="number" id="discountInput" name="discount" class="form-control form-control-sm"
+                 min="0" max="100" step="0.5" value="0"
+                 oninput="POS.renderCart ? POS.renderCart() : null">
+        </div>
+
+        <!-- Totals -->
+        <div class="cart-totals">
+          <div class="cart-total-row">
+            <span class="text-muted">Subtotal</span>
+            <span id="subtotalDisplay">$0</span>
+          </div>
+          <div class="cart-total-row">
+            <span class="text-muted">Descuento</span>
+            <span id="discountDisplay" class="text-danger">-$0</span>
+          </div>
+          <div class="cart-total-row grand">
+            <span>TOTAL</span>
+            <span id="totalDisplay" class="text-accent">$0</span>
+          </div>
+        </div>
+
+        <!-- Payment & Customer -->
+        <div class="row g-2 mb-3">
+          <div class="col-12">
+            <label class="form-label" style="font-size:13px;">Cliente</label>
+            <select name="customer_id" class="form-select form-select-sm">
+              <option value="">Mostrador (sin cliente)</option>
+              {% for c in customers %}
+              <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:13px;">Método de Pago</label>
+            <select name="payment_method" class="form-select form-select-sm">
+              <option value="efectivo">💵 Efectivo</option>
+              <option value="tarjeta">💳 Tarjeta</option>
+              <option value="transferencia">🏦 Transferencia</option>
+              <option value="cuenta_corriente">📒 Cuenta Corriente</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <textarea name="notes" class="form-control form-control-sm" rows="2" placeholder="Notas (opcional)…"></textarea>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-success w-100 py-2" onclick="POS.submit()">
+          <i class="bi bi-check-circle-fill me-2"></i>Confirmar Venta
+        </button>
+        <a href="{{ url_for('sales.index') }}" class="btn btn-outline-secondary w-100 mt-2 btn-sm">Cancelar</a>
+      </div>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Re-expose renderCart for discount input
+const origRender = POS.renderCart;
+document.getElementById('discountInput').addEventListener('input', () => {
+  // Trigger totals update — call posSearch with last value or re-render
+  const items = document.querySelectorAll('.cart-item');
+  if (items.length) {
+    // recalculate via re-render
+    const event = new Event('change');
+    document.querySelectorAll('.cart-item-qty input').forEach(i => i.dispatchEvent(event));
+  }
+});
+</script>
+{% endblock %}

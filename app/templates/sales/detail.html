@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Venta #{{ sale.id }}{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-1">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('sales.index') }}">Ventas</a></li>
+    <li class="breadcrumb-item active">Venta #{{ sale.id }}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-receipt text-accent"></i> Venta #{{ sale.id }}</h1>
+  <div class="d-flex gap-2 align-items-center">
+    {% if sale.status == 'completed' %}
+    <span class="badge badge-stock-ok px-3 py-2">Completada</span>
+    {% elif sale.status == 'cancelled' %}
+    <span class="badge badge-stock-out px-3 py-2">Cancelada</span>
+    {% else %}
+    <span class="badge badge-stock-low px-3 py-2">Pendiente</span>
+    {% endif %}
+    {% if current_user.is_admin and sale.status == 'completed' %}
+    <form method="POST" action="{{ url_for('sales.cancel_sale', sid=sale.id) }}">
+      <button type="submit" class="btn btn-outline-danger btn-sm"
+              data-confirm="¿Cancelar la venta #{{ sale.id }}? El stock será restaurado.">
+        <i class="bi bi-x-circle"></i> Cancelar Venta
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-list-ul text-accent"></i> Artículos</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Producto</th><th>SKU</th><th>Cant.</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              {% for item in sale.items %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('inventory.product_detail', pid=item.product_id) }}" class="text-decoration-none text-dark fw-500">
+                    {{ item.product.name }}
+                  </a>
+                </td>
+                <td><code style="font-size:11px;">{{ item.product.sku }}</code></td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td>{{ item.unit_price | currency }}</td>
+                <td class="fw-700">{{ item.subtotal | currency }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-end text-muted">Subtotal</td>
+                <td class="fw-600">{{ sale.subtotal | currency }}</td>
+              </tr>
+              {% if sale.discount > 0 %}
+              <tr>
+                <td colspan="4" class="text-end text-muted">Descuento ({{ sale.discount }}%)</td>
+                <td class="fw-600 text-danger">-{{ (sale.subtotal * sale.discount / 100) | currency }}</td>
+              </tr>
+              {% endif %}
+              <tr style="background:#f8fafc;">
+                <td colspan="4" class="text-end fw-700 fs-6">TOTAL</td>
+                <td class="fw-700 fs-5 text-accent">{{ sale.total | currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-info-circle text-accent"></i> Información</div>
+      <div class="card-body">
+        <dl class="row g-0 mb-0" style="font-size:14px;">
+          <dt class="col-5 text-muted">Fecha</dt>
+          <dd class="col-7">{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+          <dt class="col-5 text-muted">Vendedor</dt>
+          <dd class="col-7">{{ sale.seller.name }}</dd>
+          <dt class="col-5 text-muted">Cliente</dt>
+          <dd class="col-7">{{ sale.customer.name if sale.customer else 'Mostrador' }}</dd>
+          <dt class="col-5 text-muted">Método Pago</dt>
+          <dd class="col-7">
+            <i class="bi bi-{% if sale.payment_method == 'efectivo' %}cash{% elif sale.payment_method == 'tarjeta' %}credit-card{% else %}bank{% endif %}"></i>
+            {{ sale.payment_method | capitalize }}
+          </dd>
+          {% if sale.notes %}
+          <dt class="col-5 text-muted">Notas</dt>
+          <dd class="col-7">{{ sale.notes }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

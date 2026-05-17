@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Empleados{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-person-badge text-accent"></i> Empleados</h1>
+    <div class="page-subtitle">{{ employees|length }} empleado{{ 's' if employees|length != 1 }} · Masa salarial: <strong>{{ total_salary | currency }}</strong>/mes</div>
+  </div>
+  <a href="{{ url_for('employees.new_employee') }}" class="btn btn-primary">
+    <i class="bi bi-person-plus"></i> Nuevo Empleado
+  </a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="GET" class="d-flex gap-2">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Buscar empleado…" value="{{ search }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if employees %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Empleado</th><th>Cargo</th><th>DNI</th><th>Teléfono</th><th>Ingreso</th><th>Sueldo</th><th></th></tr></thead>
+        <tbody>
+          {% for e in employees %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width:36px;height:36px;font-size:14px;">{{ e.name[0].upper() }}</div>
+                <div>
+                  <div class="fw-500">{{ e.name }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">{{ e.email or '' }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ e.position or '—' }}</td>
+            <td><code style="font-size:11px;">{{ e.dni or '—' }}</code></td>
+            <td>{{ e.phone or '—' }}</td>
+            <td>{{ e.hire_date.strftime('%d/%m/%Y') if e.hire_date else '—' }}</td>
+            <td class="fw-700 text-accent">{{ e.salary | currency }}</td>
+            <td>
+              <a href="{{ url_for('employees.edit_employee', eid=e.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('employees.delete_employee', eid=e.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        data-confirm="¿Dar de baja a {{ e.name }}?"><i class="bi bi-person-dash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="bi bi-person-badge"></i><p>No hay empleados registrados.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

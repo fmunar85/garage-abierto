@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Proveedores{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-truck text-accent"></i> Proveedores</h1>
+    <div class="page-subtitle">{{ suppliers|length }} proveedor{{ 'es' if suppliers|length != 1 }}</div>
+  </div>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('suppliers.new_supplier') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Nuevo Proveedor
+  </a>
+  {% endif %}
+</div>
+
+<!-- Search -->
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="GET" class="d-flex gap-2">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Buscar proveedor…" value="{{ search }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      {% if search %}<a href="{{ url_for('suppliers.index') }}" class="btn btn-outline-secondary">Limpiar</a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if suppliers %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Nombre</th><th>Contacto</th><th>Teléfono</th><th>Email</th><th>CUIT</th><th>Productos</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          {% for s in suppliers %}
+          <tr>
+            <td class="fw-600">{{ s.name }}</td>
+            <td>{{ s.contact_name or '—' }}</td>
+            <td>{{ s.phone or '—' }}</td>
+            <td>{{ s.email or '—' }}</td>
+            <td><code style="font-size:11px;">{{ s.cuit or '—' }}</code></td>
+            <td><span class="badge bg-light text-dark">{{ s.products.count() }}</span></td>
+            <td>
+              {% if s.active %}<span class="badge badge-stock-ok">Activo</span>
+              {% else %}<span class="badge badge-stock-out">Inactivo</span>{% endif %}
+            </td>
+            <td>
+              {% if current_user.is_admin %}
+              <a href="{{ url_for('suppliers.edit_supplier', sid=s.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-truck"></i>
+      <p>No hay proveedores registrados.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
