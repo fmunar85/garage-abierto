@@ -300,6 +300,79 @@ with app.app_context():
          'Revestimientos','Revest Pro',23000,13800,18,5,False),
     ]
 
+    # ── URLs de imágenes por SKU ──────────────────────────────
+    _F = 'https://ferrum.com/pub/media/catalog/product/cache/723de03bc8ecfa836485d5b2e3f2ed4a'
+    _FV = 'https://fvsa.com/wp-content/uploads'
+    _U = 'https://images.unsplash.com/photo'
+    product_images = {
+        'SAN001': f'{_F}/i/n/inodoro-de-pie-largo-fontana-ferrum-sanitarios-blanco-fon-in-250-bl-b_1.jpg',
+        'SAN002': f'{_U}-1552321554-5fefe8c9ef14?w=600&q=80&fit=crop',
+        'SAN003': f'{_F}/b/i/bidet-de-pie-fontana-ferrum-sanitarios-blanco-fon-bi-101-bl-b_copia.jpg',
+        'SAN004': f'{_F}/b/i/bidet-de-pie-marina-ferrum-sanitarios-blanco-mar-bi-304-bl-b_copia.jpg',
+        'SAN005': f'{_F}/i/n/inodoro-de-pie-largo-fontana-ferrum-sanitarios-blanco-fon-in-250-bl-b_1.jpg',
+        'SAN006': f'{_U}-1584949901327-3c9e2efbcde7?w=600&q=80&fit=crop',
+        'SAN007': f'{_U}-1552321554-5fefe8c9ef14?w=600&q=80&fit=crop',
+        'SAN008': f'{_F}/i/n/inodoro-de-pie-corto-fontana-ferrum-sanitarios-blanco-fon-in-001-bl-b.jpg',
+        'GRI001': f'{_FV}/2026/03/0108_I1-AI.jpg',
+        'GRI002': f'{_FV}/2025/11/0163_M8-CR.jpg',
+        'GRI003': f'{_FV}/2025/11/0167_M8-CR.jpg',
+        'GRI004': f'{_U}-1585771724684-38269d6639fd?w=600&q=80&fit=crop',
+        'GRI005': f'{_U}-1601924428597-a5af478e5f1c?w=600&q=80&fit=crop',
+        'GRI006': f'{_FV}/2026/03/0108_I1-AI.jpg',
+        'GRI007': f'{_U}-1585771724684-38269d6639fd?w=600&q=80&fit=crop',
+        'GRI008': f'{_U}-1571902943202-507ec2618e8f?w=600&q=80&fit=crop',
+        'GRI009': f'{_FV}/2026/03/0108_I1-AI.jpg',
+        'GRI010': f'{_FV}/2025/11/0168_M8-CR.jpg',
+        'BAU001': f'{_F}/b/a/banera-de-empotrar-acrilico-serena-ferrum-duchas-y-baneras-blanco-ser-ba-130-bl-a.jpg_1.jpg',
+        'BAU002': f'{_U}-1604709177225-055f99402ea3?w=600&q=80&fit=crop',
+        'BAU003': f'{_F}/b/a/bacha-tori-redonda-ferrum-bachas-blanco-tor-bh-057-bl-b_1.jpg',
+        'BAU004': f'{_F}/b/a/bacha-milos-slim-mls-bh-171-bl.jpg',
+        'BAU005': f'{_F}/l/a/lavatorio-espacio-bari-con-soporte-fijo-ferrum-bachas-blanco-esp-lv-102-bl-b_1.jpg',
+        'BAU006': f'{_U}-1607434472851-8e9e1b93e0f4?w=600&q=80&fit=crop',
+        'BAU007': f'{_F}/b/a/bacha-milos-slim-mls-bh-173-bl.jpg',
+        'BAU008': f'{_U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'ACC001': f'{_U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'ACC002': f'{_U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'ACC003': f'{_FV}/2025/11/0163_M8-CR.jpg',
+        'ACC004': f'{_FV}/2025/11/0167_M8-CR.jpg',
+        'ACC005': f'{_FV}/2025/11/0168_M8-CR.jpg',
+        'ACC006': f'{_U}-1620626011761-99316d1814b4?w=600&q=80&fit=crop',
+        'ACC007': f'{_U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'ACC008': f'{_U}-1584949901327-3c9e2efbcde7?w=600&q=80&fit=crop',
+        'ACC009': f'{_U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'ACC010': f'{_U}-1620626011761-99316d1814b4?w=600&q=80&fit=crop',
+        'MAM001': f'{_F}/k/h/khi-mp-038-c.jpg',
+        'MAM002': f'{_F}/k/h/khi-mp-026-c.jpg',
+        'MAM003': f'{_U}-1571902943202-507ec2618e8f?w=600&q=80&fit=crop',
+        'MAM004': f'{_F}/r/e/receptaculo-cuadrado-khios-90x90-ferrum-duchas-y-baneras-blanco-khi-rc-018-bl-b_1.jpg',
+        'MAM005': f'{_F}/r/e/receptaculo-semicircular-khios-khi-rc-029-bl-b_1.jpg',
+        'MAM006': f'{_F}/k/h/khi-mp-010-c.jpg',
+        'MAM007': f'{_U}-1584949901327-3c9e2efbcde7?w=600&q=80&fit=crop',
+        'MAM008': f'{_U}-1601924428597-a5af478e5f1c?w=600&q=80&fit=crop',
+        'MUE001': f'{_F}/k/i/kit-bacha-con-mueble-de-colgar-persis-ferrum-bachas-rojo-brillante-prs-jg-001-rb-b_1.jpg',
+        'MUE002': f'{_U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'MUE003': f'{_U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'MUE004': f'{_F}/l/a/lavatorio-venecia-64-cm-1-agujero-ferrum-bachas-blanco-vnc-ms-004-bl-b_1.jpg',
+        'MUE005': f'{_U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'MUE006': f'{_U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'MUE007': f'{_U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'MUE008': f'{_U}-1584949901327-3c9e2efbcde7?w=600&q=80&fit=crop',
+        'CAL001': f'{_U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'CAL002': f'{_U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'CAL003': f'{_U}-1584949901327-3c9e2efbcde7?w=600&q=80&fit=crop',
+        'CAL004': f'{_U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'CAL005': f'{_U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'CAL006': f'{_U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'REV001': f'{_U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'REV002': f'{_U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'REV003': f'{_U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'REV004': f'{_U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'REV005': f'{_U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'REV006': f'{_U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'REV007': f'{_U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'REV008': f'{_U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+    }
+
     products_map = {}
     created_count = 0
     for row in products_data:
@@ -322,6 +395,8 @@ with app.app_context():
             )
             db.session.add(p)
             created_count += 1
+        if not p.image_url and sku in product_images:
+            p.image_url = product_images[sku]
         products_map[sku] = p
 
     db.session.commit()
