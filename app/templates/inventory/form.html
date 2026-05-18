@@ -98,15 +98,40 @@
   <!-- Right column -->
   <div class="col-lg-4">
     <div class="card mb-3">
-      <div class="card-header"><i class="bi bi-image text-accent"></i> Imagen</div>
+      <div class="card-header"><i class="bi bi-image text-accent"></i> Imagen del Producto</div>
       <div class="card-body">
         {% if product and product.image_src %}
         <img src="{{ product.image_src }}" class="img-fluid rounded mb-3" style="max-height:180px;object-fit:cover;width:100%;" alt="">
         {% endif %}
-        <label class="form-label">Subir imagen</label>
-        <input type="file" name="image_file" class="form-control mb-3" accept="image/*">
-        <label class="form-label">O pegar URL de imagen</label>
-        <input type="url" name="image_url" class="form-control" placeholder="https://…" value="{{ product.image_url if product and product.image_url and product.image_url.startswith('http') else '' }}">
+
+        {% if cloudinary_ok %}
+        <div class="alert alert-success py-2 small mb-3">
+          <i class="bi bi-cloud-check-fill me-1"></i>
+          <strong>Cloudinary activo</strong> — las imágenes se guardan en la nube y no se pierden con deploys.
+        </div>
+        {% else %}
+        <div class="alert alert-warning py-2 small mb-3">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i>
+          <strong>Atención:</strong> sin Cloudinary configurado, las imágenes subidas
+          se guardan localmente y <strong>se pierden al redesployar</strong> en Railway.
+          Usá URL externa o configurá Cloudinary en las variables de entorno.
+          <a href="{{ url_for('admin.cloudinary_info') }}" class="d-block mt-1 fw-medium">
+            ¿Cómo configurarlo? →
+          </a>
+        </div>
+        {% endif %}
+
+        <label class="form-label fw-medium">Subir imagen</label>
+        <input type="file" name="image_file" class="form-control mb-1" accept="image/*" capture="environment">
+        <div class="form-text mb-3">
+          {% if cloudinary_ok %}Se sube a Cloudinary automáticamente.{% else %}Solo para uso local/dev.{% endif %}
+          Funciona desde celular y PC.
+        </div>
+
+        <label class="form-label fw-medium">O pegar URL de imagen</label>
+        <input type="url" name="image_url" class="form-control" placeholder="https://…"
+               value="{{ product.image_url if product and product.image_url and product.image_url.startswith('http') else '' }}">
+        <div class="form-text">Recomendado para producción si no tenés Cloudinary.</div>
       </div>
     </div>
 

@@ -10,6 +10,7 @@ from app.utils import admin_required
 from datetime import date, timedelta
 from sqlalchemy import func
 import json
+import os
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -309,3 +310,14 @@ def update_images():
     db.session.commit()
     flash(f'✅ {n} imágenes actualizadas correctamente.', 'success')
     return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/cloudinary-info')
+@login_required
+@admin_required
+def cloudinary_info():
+    """Página de ayuda para configurar Cloudinary en Railway."""
+    configured = all(os.environ.get(k) for k in (
+        'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
+    ))
+    return render_template('admin/cloudinary_info.html', configured=configured)

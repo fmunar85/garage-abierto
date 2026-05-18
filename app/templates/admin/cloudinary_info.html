@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Configuración de Imágenes{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:860px">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h2 class="mb-0"><i class="bi bi-cloud-upload me-2 text-primary"></i>Almacenamiento de Imágenes</h2>
+      <p class="text-muted small mb-0">Cómo y dónde se guardan las fotos de los productos</p>
+    </div>
+  </div>
+
+  <!-- Estado actual -->
+  {% if configured %}
+  <div class="alert alert-success d-flex align-items-center gap-3 mb-4">
+    <i class="bi bi-cloud-check-fill fs-2"></i>
+    <div>
+      <strong class="d-block">✅ Cloudinary está configurado y activo</strong>
+      Las imágenes subidas desde el formulario de productos se almacenan en Cloudinary
+      y sobreviven cualquier redeploy en Railway. No hay nada más que hacer.
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
+    <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+    <div>
+      <strong class="d-block">⚠️ Cloudinary NO está configurado</strong>
+      Las imágenes subidas se guardan dentro del contenedor de Railway y
+      <strong>se borran en cada redeploy o reinicio</strong>.
+      Configurarlo es gratuito y lleva 5 minutos.
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Explicación del problema -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-medium"><i class="bi bi-question-circle me-2"></i>¿Por qué necesitamos esto?</div>
+    <div class="card-body">
+      <p>Railway (donde está hosteada esta app) usa <strong>contenedores efímeros</strong>: cada vez
+      que se hace un deploy o Railway reinicia el servidor, el sistema de archivos se resetea.
+      Cualquier imagen subida manualmente <strong>se pierde</strong>.</p>
+
+      <p class="mb-0">La solución es usar <strong>Cloudinary</strong> — un servicio de almacenamiento
+      de imágenes en la nube. El plan gratuito incluye <strong>25 GB de almacenamiento</strong>
+      y <strong>25.000 transformaciones/mes</strong>, más que suficiente para esta app.</p>
+    </div>
+  </div>
+
+  <!-- Opciones de imagen -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-medium"><i class="bi bi-image me-2"></i>¿Dónde puedo guardar imágenes ahora mismo?</div>
+    <div class="card-body p-0">
+      <table class="table table-bordered mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Método</th>
+            <th>¿Desde celular?</th>
+            <th>¿Se pierde?</th>
+            <th>Recomendado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Subir archivo</strong> (sin Cloudinary)</td>
+            <td><i class="bi bi-check-circle text-success"></i> Sí</td>
+            <td><i class="bi bi-x-circle text-danger"></i> Sí, en cada deploy</td>
+            <td><span class="badge bg-danger">No</span></td>
+          </tr>
+          <tr>
+            <td><strong>Subir archivo</strong> (con Cloudinary)</td>
+            <td><i class="bi bi-check-circle text-success"></i> Sí, incluso con cámara</td>
+            <td><i class="bi bi-check-circle text-success"></i> No, queda en la nube</td>
+            <td><span class="badge bg-success">Sí ✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>URL externa</strong> (Google Drive, Imgur, etc.)</td>
+            <td><i class="bi bi-check-circle text-success"></i> Sí</td>
+            <td><i class="bi bi-check-circle text-success"></i> No</td>
+            <td><span class="badge bg-primary">Alternativa</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Instrucciones paso a paso -->
+  {% if not configured %}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-medium bg-primary text-white">
+      <i class="bi bi-list-ol me-2"></i>Configurar Cloudinary en Railway — paso a paso
+    </div>
+    <div class="card-body">
+      <ol class="mb-0">
+        <li class="mb-3">
+          <strong>Crear cuenta gratuita en Cloudinary</strong><br>
+          Ir a <a href="https://cloudinary.com/users/register_free" target="_blank">cloudinary.com/users/register_free</a>
+          y registrarse con email o Google.
+        </li>
+        <li class="mb-3">
+          <strong>Copiar las credenciales</strong><br>
+          En el dashboard de Cloudinary (sección <em>Product Environment</em>) vas a ver:
+          <ul class="mt-2">
+            <li><code>Cloud name</code></li>
+            <li><code>API Key</code></li>
+            <li><code>API Secret</code></li>
+          </ul>
+        </li>
+        <li class="mb-3">
+          <strong>Agregar variables en Railway</strong><br>
+          En tu proyecto de Railway → <em>Variables</em> → agregar:
+          <div class="bg-dark text-white rounded p-3 mt-2 font-monospace small">
+            CLOUDINARY_CLOUD_NAME = tu-cloud-name<br>
+            CLOUDINARY_API_KEY    = 123456789012345<br>
+            CLOUDINARY_API_SECRET = abcdefghijklmnopqrstuvwxyz
+          </div>
+        </li>
+        <li class="mb-3">
+          <strong>Railway redeploya automáticamente</strong><br>
+          Al guardar las variables, Railway reinicia la app. Recargá esta página
+          y deberías ver el estado ✅ Cloudinary activo.
+        </li>
+        <li>
+          <strong>Listo</strong> — al subir una imagen desde el formulario de producto
+          (desde PC o celular), se sube directamente a Cloudinary y queda guardada para siempre.
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tips para celular -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-medium"><i class="bi bi-phone me-2"></i>Uso desde celular</div>
+    <div class="card-body">
+      <p>El formulario de producto tiene el atributo <code>capture="environment"</code>
+      en el campo de imagen, lo que en celulares Android/iOS muestra la opción de
+      <strong>tomar foto con la cámara trasera directamente</strong> o elegir de la galería.</p>
+      <p class="mb-0">Con Cloudinary configurado, la foto se sube a la nube al guardar el producto.
+      Sin Cloudinary, queda temporalmente en el servidor.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Alternativa con URL -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header fw-medium"><i class="bi bi-link-45deg me-2"></i>Alternativa: usar URL de imagen externa</div>
+    <div class="card-body">
+      <p>Si no querés configurar Cloudinary, podés subir las fotos a cualquier servicio externo
+      y pegar la URL en el campo <em>"O pegar URL de imagen"</em> del formulario:</p>
+      <ul class="mb-0">
+        <li><strong>Google Photos</strong> → compartir → "Cualquiera con el enlace" → copiar URL directa</li>
+        <li><strong>Imgur</strong> (imgur.com) → subir imagen → copiar enlace directo (<code>.jpg</code>)</li>
+        <li><strong>ImgBB</strong> (imgbb.com) → gratuito, sin registro para imágenes básicas</li>
+        <li><strong>El sitio del proveedor</strong> → muchas veces tienen fotos de productos en su web</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -19,13 +19,43 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def _cloudinary_configured():
+    """Devuelve True si las variables de entorno de Cloudinary están seteadas."""
+    return all(os.environ.get(k) for k in ('CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'))
+
+
 def save_uploaded_image(file):
-    if file and allowed_file(file.filename):
-        ext = file.filename.rsplit('.', 1)[1].lower()
-        filename = f"{uuid.uuid4().hex}.{ext}"
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-        return filename
-    return None
+    """Sube la imagen a Cloudinary (producción) o al filesystem local (desarrollo).
+    Devuelve la URL pública (Cloudinary) o el nombre de archivo (local).
+    """
+    if not file or not allowed_file(file.filename):
+        return None
+
+    # ── Cloudinary (Railway / producción) ─────────────────────────────────────
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME')
+    api_key    = os.environ.get('CLOUDINARY_API_KEY')
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+
+    if cloud_name and api_key and api_secret:
+        try:
+            import cloudinary
+            import cloudinary.uploader
+            cloudinary.config(cloud_name=cloud_name, api_key=api_key, api_secret=api_secret)
+            result = cloudinary.uploader.upload(
+                file,
+                folder='garage_abierto/productos',
+                transformation=[{'width': 800, 'height': 800, 'crop': 'limit', 'quality': 'auto', 'fetch_format': 'auto'}],
+            )
+            return result['secure_url']   # URL absoluta HTTPS → se persiste en BD
+        except Exception as e:
+            current_app.logger.error(f'Cloudinary upload failed: {e}')
+            # fallback a local
+
+    # ── Filesystem local (desarrollo) ─────────────────────────────────────────
+    ext      = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    return filename   # nombre relativo → image_src lo convierte a URL
 
 
 @inventory_bp.route('/')
@@ -83,14 +113,15 @@ def product_detail(pid):
 def new_product():
     categories = Category.query.order_by(Category.name).all()
     suppliers = Supplier.query.filter_by(active=True).order_by(Supplier.name).all()
+    cloudinary_ok = _cloudinary_configured()
     if request.method == 'POST':
         sku = request.form.get('sku', '').strip().upper()
         if not sku or not request.form.get('name') or not request.form.get('price'):
             flash('SKU, nombre y precio son obligatorios.', 'danger')
-            return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers)
+            return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers, cloudinary_ok=cloudinary_ok)
         if Product.query.filter_by(sku=sku).first():
             flash(f'El SKU {sku} ya existe.', 'danger')
-            return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers)
+            return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers, cloudinary_ok=cloudinary_ok)
 
         image_filename = None
         file = request.files.get('image_file')
@@ -116,7 +147,7 @@ def new_product():
         db.session.commit()
         flash(f'Producto "{p.name}" creado correctamente.', 'success')
         return redirect(url_for('inventory.product_detail', pid=p.id))
-    return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers)
+    return render_template('inventory/form.html', product=None, categories=categories, suppliers=suppliers, cloudinary_ok=cloudinary_ok)
 
 
 @inventory_bp.route('/producto/<int:pid>/editar', methods=['GET', 'POST'])
@@ -125,12 +156,13 @@ def edit_product(pid):
     product = Product.query.get_or_404(pid)
     categories = Category.query.order_by(Category.name).all()
     suppliers = Supplier.query.filter_by(active=True).order_by(Supplier.name).all()
+    cloudinary_ok = _cloudinary_configured()
     if request.method == 'POST':
         sku = request.form.get('sku', '').strip().upper()
         existing = Product.query.filter_by(sku=sku).first()
         if existing and existing.id != pid:
             flash(f'El SKU {sku} ya pertenece a otro producto.', 'danger')
-            return render_template('inventory/form.html', product=product, categories=categories, suppliers=suppliers)
+            return render_template('inventory/form.html', product=product, categories=categories, suppliers=suppliers, cloudinary_ok=cloudinary_ok)
 
         file = request.files.get('image_file')
         new_img = save_uploaded_image(file)
@@ -153,7 +185,7 @@ def edit_product(pid):
         db.session.commit()
         flash('Producto actualizado correctamente.', 'success')
         return redirect(url_for('inventory.product_detail', pid=product.id))
-    return render_template('inventory/form.html', product=product, categories=categories, suppliers=suppliers)
+    return render_template('inventory/form.html', product=product, categories=categories, suppliers=suppliers, cloudinary_ok=cloudinary_ok)
 
 
 @inventory_bp.route('/producto/<int:pid>/stock', methods=['POST'])
