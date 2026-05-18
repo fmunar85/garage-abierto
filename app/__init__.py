@@ -47,6 +47,11 @@ def create_app():
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+    # Auto-create any new tables (safe: does not drop existing ones)
+    with app.app_context():
+        from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion  # noqa
+        db.create_all()
+
     # Custom Jinja2 filters
     @app.template_filter('currency')
     def currency_filter(value):
