@@ -7,6 +7,40 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 
+def _run_column_migrations(db):
+    """Aplica ALTER TABLE para columnas nuevas que no existen todavía en la BD."""
+    migrations = [
+        # (tabla, columna, definición SQL)
+        ('products',          'internal_barcode', 'VARCHAR(16)'),
+        ('barcode_sequences', 'last_seq',         None),           # tabla nueva → solo create_all
+        ('stock_movements',   'product_id',       None),           # tabla nueva → solo create_all
+    ]
+    with db.engine.connect() as conn:
+        for table, column, col_def in migrations:
+            if col_def is None:
+                continue  # tablas nuevas se crean con create_all, no necesitan ALTER
+            try:
+                result = conn.execute(
+                    db.text(
+                        "SELECT 1 FROM information_schema.columns "
+                        "WHERE table_name = :t AND column_name = :c"
+                    ),
+                    {'t': table, 'c': column},
+                )
+                if result.fetchone() is None:
+                    conn.execute(db.text(
+                        f'ALTER TABLE {table} ADD COLUMN {column} {col_def}'
+                    ))
+                    conn.commit()
+            except Exception as e:
+                # Si la tabla no existe aún, create_all la creará después
+                conn.rollback()
+                import logging
+                logging.getLogger(__name__).warning(
+                    'Migration skipped for %s.%s: %s', table, column, e
+                )
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -51,6 +85,9 @@ def create_app():
     with app.app_context():
         from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion  # noqa
         db.create_all()
+
+        # ── Migraciones de columnas nuevas (ALTER TABLE si no existen) ──────
+        _run_column_migrations(db)
 
     # Custom Jinja2 filters
     @app.template_filter('currency')
