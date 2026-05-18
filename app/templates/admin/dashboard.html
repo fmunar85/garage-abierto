@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block extra_css %}
 <style>
@@ -38,7 +38,7 @@
 <div class="page-header mb-0">
   <div>
     <h1 class="page-title"><i class="bi bi-speedometer2 text-accent"></i> Dashboard</h1>
-    <div class="page-subtitle">Vista ejecutiva — Garage Abierto</div>
+    <div class="page-subtitle">Vista ejecutiva â€” Garage Abierto</div>
   </div>
   <div class="d-flex gap-2">
     <a href="{{ url_for('sales.new_sale') }}" class="btn btn-success btn-sm"><i class="bi bi-cart-plus me-1"></i>Nueva Venta</a>
@@ -46,12 +46,12 @@
   </div>
 </div>
 
-<!-- ROW 1 — KPIs -->
+<!-- ROW 1 â€” KPIs -->
 <div class="row g-3 mt-1 mb-3">
   <div class="col-6 col-md-4 col-xl-3">
     <div class="kpi-card">
       <div class="kpi-icon blue"><i class="bi bi-currency-dollar"></i></div>
-      <div class="kpi-label">Facturación Hoy</div>
+      <div class="kpi-label">FacturaciÃ³n Hoy</div>
       <div class="kpi-value sm">{{ today_revenue | currency }}</div>
       <div class="kpi-sub">{{ today_sales_count }} venta{{ 's' if today_sales_count != 1 }}</div>
     </div>
@@ -59,7 +59,7 @@
   <div class="col-6 col-md-4 col-xl-3">
     <div class="kpi-card">
       <div class="kpi-icon green"><i class="bi bi-graph-up-arrow"></i></div>
-      <div class="kpi-label">Facturación del Mes</div>
+      <div class="kpi-label">FacturaciÃ³n del Mes</div>
       <div class="kpi-value sm">{{ month_revenue | currency }}</div>
       <div class="kpi-sub">
         {% if month_delta_pct > 0 %}<span class="kpi-delta up"><i class="bi bi-arrow-up-short"></i>{{ month_delta_pct }}% vs mes ant.</span>
@@ -87,9 +87,9 @@
   <div class="col-6 col-md-4 col-xl-3">
     <div class="kpi-card" style="cursor:pointer;" onclick="location.href='{{ url_for('inventory.index') }}?stock=low'">
       <div class="kpi-icon red"><i class="bi bi-exclamation-triangle"></i></div>
-      <div class="kpi-label">Bajo Stock ↗</div>
+      <div class="kpi-label">Bajo Stock â†—</div>
       <div class="kpi-value" style="color:{% if low_stock_count > 0 %}#dc2626{% else %}#22c55e{% endif %};">{{ low_stock_count }}</div>
-      <div class="kpi-sub">{{ out_of_stock_count }} sin stock · click para ver</div>
+      <div class="kpi-sub">{{ out_of_stock_count }} sin stock Â· click para ver</div>
     </div>
   </div>
   <div class="col-6 col-md-4 col-xl-3">
@@ -97,7 +97,7 @@
       <div class="kpi-icon blue"><i class="bi bi-box-seam"></i></div>
       <div class="kpi-label">Productos Activos</div>
       <div class="kpi-value">{{ total_products }}</div>
-      <div class="kpi-sub">en catálogo</div>
+      <div class="kpi-sub">en catÃ¡logo</div>
     </div>
   </div>
   <div class="col-6 col-md-4 col-xl-3">
@@ -111,19 +111,19 @@
   <div class="col-6 col-md-4 col-xl-3">
     <div class="kpi-card" style="cursor:pointer;" onclick="location.href='{{ url_for('promotions.index') }}'">
       <div class="kpi-icon green"><i class="bi bi-bank"></i></div>
-      <div class="kpi-label">Promociones Vigentes ↗</div>
+      <div class="kpi-label">Promociones Vigentes â†—</div>
       <div class="kpi-value" style="color:{% if active_promos %}#16a34a{% else %}#8a94a6{% endif %};">{{ active_promos|length }}</div>
       <div class="kpi-sub">bancos con beneficios activos</div>
     </div>
   </div>
 </div>
 
-<!-- ROW 2 — Gráfico 30 días + Métodos de pago -->
+<!-- ROW 2 â€” GrÃ¡fico 30 dÃ­as + MÃ©todos de pago -->
 <div class="row g-3 mb-3">
   <div class="col-lg-8">
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-bar-chart-line text-accent"></i> Ventas últimos 30 días</span>
+        <span><i class="bi bi-bar-chart-line text-accent"></i> Ventas Ãºltimos 30 dÃ­as</span>
         <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver ventas</a>
       </div>
       <div class="card-body">
@@ -164,7 +164,7 @@
   </div>
 </div>
 
-<!-- ROW 3 — Top productos + 6 meses -->
+<!-- ROW 3 â€” Top productos + 6 meses -->
 <div class="row g-3 mb-3">
   <div class="col-lg-6">
     <div class="card h-100">
@@ -180,7 +180,7 @@
               <tr>
                 <td class="text-muted fw-700" style="width:32px;">{{ loop.index }}</td>
                 <td>
-                  <div class="fw-600" style="font-size:13px;">{{ p.name[:35] }}{% if p.name|length > 35 %}…{% endif %}</div>
+                  <div class="fw-600" style="font-size:13px;">{{ p.name[:35] }}{% if p.name|length > 35 %}â€¦{% endif %}</div>
                   <code style="font-size:10px;color:#aaa;">{{ p.sku }}</code>
                   <div style="height:3px;background:#eef0f4;border-radius:2px;margin-top:4px;">
                     <div style="width:{{ ((p.revenue | float) / max_rev * 100) | round }}%;height:3px;background:var(--accent);border-radius:2px;"></div>
@@ -209,7 +209,7 @@
   </div>
 </div>
 
-<!-- ROW 4 — Alertas stock + Últimas ventas -->
+<!-- ROW 4 â€” Alertas stock + Ãšltimas ventas -->
 <div class="row g-3 mb-3">
   <div class="col-lg-5">
     <div class="card">
@@ -221,12 +221,12 @@
         {% if low_stock_products %}
         <div class="table-responsive">
           <table class="table mb-0">
-            <thead><tr><th>Producto</th><th>SKU</th><th class="text-center">Stock</th><th class="text-center">Mín.</th></tr></thead>
+            <thead><tr><th>Producto</th><th>SKU</th><th class="text-center">Stock</th><th class="text-center">MÃ­n.</th></tr></thead>
             <tbody>
               {% for p in low_stock_products %}
               <tr class="stock-row" onclick="location.href='{{ url_for('inventory.product_detail', pid=p.id) }}'">
                 <td>
-                  <div class="fw-600" style="font-size:13px;">{{ p.name[:26] }}{% if p.name|length > 26 %}…{% endif %}</div>
+                  <div class="fw-600" style="font-size:13px;">{{ p.name[:26] }}{% if p.name|length > 26 %}â€¦{% endif %}</div>
                   <div style="font-size:11px;color:#aaa;">{{ p.category_obj.name if p.category_obj else '' }}</div>
                 </td>
                 <td><code style="font-size:10px;">{{ p.sku }}</code></td>
@@ -241,7 +241,7 @@
           </table>
         </div>
         {% else %}
-        <div class="empty-state py-4"><i class="bi bi-check-circle" style="color:var(--success)"></i><p>Todo el stock en orden 🎉</p></div>
+        <div class="empty-state py-4"><i class="bi bi-check-circle" style="color:var(--success)"></i><p>Todo el stock en orden ðŸŽ‰</p></div>
         {% endif %}
       </div>
     </div>
@@ -249,27 +249,27 @@
   <div class="col-lg-7">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-clock-history text-accent"></i> Últimas Ventas</span>
+        <span><i class="bi bi-clock-history text-accent"></i> Ãšltimas Ventas</span>
         <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
       </div>
       <div class="card-body p-0">
         {% if recent_sales %}
         <div class="table-responsive">
           <table class="table mb-0">
-            <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Método</th><th class="text-end">Total</th><th></th></tr></thead>
+            <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>MÃ©todo</th><th class="text-end">Total</th><th></th></tr></thead>
             <tbody>
-              {% set pm_icons = {'efectivo':'💵','tarjeta':'💳','transferencia':'🏦','cuenta_corriente':'📒'} %}
+              {% set pm_icons = {'efectivo':'ðŸ’µ','tarjeta':'ðŸ’³','transferencia':'ðŸ¦','cuenta_corriente':'ðŸ“’'} %}
               {% for s in recent_sales %}
               <tr>
                 <td><a href="{{ url_for('sales.sale_detail', sid=s.id) }}" class="fw-600 text-accent">#{{ s.id }}</a></td>
                 <td style="font-size:12px;">{{ s.created_at.strftime('%d/%m %H:%M') }}</td>
                 <td style="font-size:13px;">{{ s.customer.name[:18] if s.customer else '<span class="text-muted">Mostrador</span>'|safe }}</td>
-                <td style="font-size:12px;">{{ pm_icons.get(s.payment_method,'💰') }} {{ s.payment_method | capitalize }}</td>
+                <td style="font-size:12px;">{{ pm_icons.get(s.payment_method,'ðŸ’°') }} {{ s.payment_method | capitalize }}</td>
                 <td class="text-end fw-700">{{ s.total | currency }}</td>
                 <td>
-                  {% if s.status=='completed' %}<span class="badge badge-stock-ok" style="font-size:10px;">✓</span>
-                  {% elif s.status=='cancelled' %}<span class="badge badge-stock-out" style="font-size:10px;">✗</span>
-                  {% else %}<span class="badge badge-stock-low" style="font-size:10px;">⏳</span>{% endif %}
+                  {% if s.status=='completed' %}<span class="badge badge-stock-ok" style="font-size:10px;">âœ“</span>
+                  {% elif s.status=='cancelled' %}<span class="badge badge-stock-out" style="font-size:10px;">âœ—</span>
+                  {% else %}<span class="badge badge-stock-low" style="font-size:10px;">â³</span>{% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -284,7 +284,7 @@
   </div>
 </div>
 
-<!-- ROW 5 — Promociones vigentes -->
+<!-- ROW 5 â€” Promociones vigentes -->
 {% if active_promos %}
 <div class="row g-3 mb-3">
   <div class="col-12">
@@ -296,9 +296,9 @@
       <div class="card-body">
         {% for p in active_promos %}
         <span class="promo-badge">
-          🏦 {{ p.bank }}{% if p.card_type and p.card_type != 'Todas' %} · {{ p.card_type }}{% endif %}
-          {% if p.installments > 1 %} · {{ p.installments }}c{% if p.interest_rate == 0 %}SI{% endif %}{% endif %}
-          {% if p.discount_pct > 0 %} · {{ p.discount_pct }}%OFF{% endif %}
+          ðŸ¦ {{ p.bank }}{% if p.card_type and p.card_type != 'Todas' %} Â· {{ p.card_type }}{% endif %}
+          {% if p.installments > 1 %} Â· {{ p.installments }}c{% if p.interest_rate == 0 %}SI{% endif %}{% endif %}
+          {% if p.discount_pct > 0 %} Â· {{ p.discount_pct }}%OFF{% endif %}
         </span>
         {% endfor %}
       </div>
@@ -354,219 +354,6 @@ new Chart(document.getElementById('chartMonthly'), {
       y:  { position:'left',  ticks: { callback: v=>'$'+(v/1000).toFixed(0)+'k', font:tickFont }, grid: { color:'#f0f2f4' } },
       y2: { position:'right', ticks: { font:tickFont }, grid: { display:false } },
       x:  { ticks: { font:tickFont }, grid: { display:false } }
-    }
-  }
-});
-</script>
-{% endblock %}
-
-<div class="page-header">
-  <div>
-    <h1 class="page-title"><i class="bi bi-speedometer2 text-accent"></i> Dashboard</h1>
-    <div class="page-subtitle">Resumen de actividad de Garage Abierto</div>
-  </div>
-</div>
-
-<!-- Stat cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="stat-icon blue"><i class="bi bi-box-seam"></i></div>
-      <div>
-        <div class="stat-label">Productos Activos</div>
-        <div class="stat-value">{{ total_products }}</div>
-        <div class="stat-sub">en stock</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="stat-icon red"><i class="bi bi-exclamation-triangle"></i></div>
-      <div>
-        <div class="stat-label">Bajo Stock</div>
-        <div class="stat-value">{{ low_stock_products|length }}</div>
-        <div class="stat-sub">requieren atención</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="stat-icon green"><i class="bi bi-receipt"></i></div>
-      <div>
-        <div class="stat-label">Ventas Hoy</div>
-        <div class="stat-value">{{ today_sales_count }}</div>
-        <div class="stat-sub">transacciones</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="stat-card">
-      <div class="stat-icon amber"><i class="bi bi-currency-dollar"></i></div>
-      <div>
-        <div class="stat-label">Facturación Hoy</div>
-        <div class="stat-value" style="font-size:18px;">{{ today_revenue | currency }}</div>
-        <div class="stat-sub">total del día</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <!-- Monthly chart -->
-  <div class="col-lg-8">
-    <div class="card h-100">
-      <div class="card-header"><i class="bi bi-bar-chart-line text-accent"></i> Ventas Mensuales</div>
-      <div class="card-body">
-        <canvas id="chartMonthly" height="90"></canvas>
-      </div>
-    </div>
-  </div>
-  <!-- Category pie -->
-  <div class="col-lg-4">
-    <div class="card h-100">
-      <div class="card-header"><i class="bi bi-pie-chart text-accent"></i> Productos por Categoría</div>
-      <div class="card-body d-flex align-items-center justify-content-center">
-        <canvas id="chartCat" height="200"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row g-3">
-  <!-- Recent sales -->
-  <div class="col-lg-7">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-clock-history text-accent"></i> Últimas Ventas</span>
-        <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
-      </div>
-      <div class="card-body p-0">
-        {% if recent_sales %}
-        <div class="table-responsive">
-          <table class="table mb-0">
-            <thead><tr>
-              <th>#</th><th>Fecha</th><th>Cliente</th><th>Método</th><th>Total</th><th>Estado</th>
-            </tr></thead>
-            <tbody>
-              {% for sale in recent_sales %}
-              <tr>
-                <td><a href="{{ url_for('sales.sale_detail', sid=sale.id) }}" class="fw-600 text-accent">#{{ sale.id }}</a></td>
-                <td>{{ sale.created_at.strftime('%d/%m %H:%M') }}</td>
-                <td>{{ sale.customer.name if sale.customer else '<span class="text-muted">Mostrador</span>' | safe }}</td>
-                <td><span class="badge bg-light text-dark">{{ sale.payment_method | capitalize }}</span></td>
-                <td class="fw-600">{{ sale.total | currency }}</td>
-                <td>
-                  {% if sale.status == 'completed' %}<span class="badge badge-stock-ok">Completada</span>
-                  {% elif sale.status == 'cancelled' %}<span class="badge badge-stock-out">Cancelada</span>
-                  {% else %}<span class="badge badge-stock-low">Pendiente</span>{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="empty-state"><i class="bi bi-receipt"></i><p>No hay ventas registradas aún.</p></div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Low stock alerts -->
-  <div class="col-lg-5">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-exclamation-triangle text-warning"></i> Alertas de Stock</span>
-        <a href="{{ url_for('inventory.index') }}?stock=low" class="btn btn-sm btn-outline-warning">Ver todos</a>
-      </div>
-      <div class="card-body p-0">
-        {% if low_stock_products %}
-        <div class="table-responsive">
-          <table class="table mb-0">
-            <thead><tr><th>Producto</th><th>SKU</th><th>Stock</th><th>Mín.</th></tr></thead>
-            <tbody>
-              {% for p in low_stock_products %}
-              <tr>
-                <td>
-                  <a href="{{ url_for('inventory.product_detail', pid=p.id) }}" class="text-decoration-none text-dark fw-500">
-                    {{ p.name[:30] }}{% if p.name|length > 30 %}…{% endif %}
-                  </a>
-                </td>
-                <td><code style="font-size:11px;">{{ p.sku }}</code></td>
-                <td>
-                  <span class="badge {% if p.stock == 0 %}badge-stock-out{% else %}badge-stock-low{% endif %}">
-                    {{ p.stock }}
-                  </span>
-                </td>
-                <td class="text-muted">{{ p.min_stock }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="empty-state py-4"><i class="bi bi-check-circle" style="color:var(--success)"></i><p>Todo el stock en orden 🎉</p></div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-<script>
-const monthlyData = {{ monthly_data | safe }};
-const catData = {{ cat_data | safe }};
-
-// Monthly bar chart
-new Chart(document.getElementById('chartMonthly'), {
-  type: 'bar',
-  data: {
-    labels: monthlyData.map(d => d.month),
-    datasets: [{
-      label: 'Ventas ($)',
-      data: monthlyData.map(d => d.total),
-      backgroundColor: 'rgba(45,156,219,0.7)',
-      borderColor: '#2d9cdb',
-      borderWidth: 2,
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        ticks: {
-          callback: v => '$' + (v/1000).toFixed(0) + 'k',
-          font: { family: 'Poppins', size: 11 }
-        },
-        grid: { color: '#f0f2f4' }
-      },
-      x: { ticks: { font: { family: 'Poppins', size: 11 } }, grid: { display: false } }
-    }
-  }
-});
-
-// Category doughnut
-const COLORS = ['#2d9cdb','#d4a853','#3fb950','#f85149','#e3b341','#7c3aed','#06b6d4','#f97316'];
-new Chart(document.getElementById('chartCat'), {
-  type: 'doughnut',
-  data: {
-    labels: catData.map(d => d.name),
-    datasets: [{
-      data: catData.map(d => d.count),
-      backgroundColor: COLORS,
-      borderWidth: 2,
-      borderColor: '#fff',
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 11 }, padding: 10 } }
     }
   }
 });
