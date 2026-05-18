@@ -94,6 +94,44 @@
 
           </div>
 
+          <!-- CALCULADORA LIVE -->
+          <div class="col-12 mt-2">
+            <div id="promoPreview" class="card" style="background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:2px solid #bbf7d0;">
+              <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="fw-700" style="font-size:14px;"><i class="bi bi-calculator me-1 text-accent"></i> Simulador</div>
+                  <div class="d-flex align-items-center gap-2">
+                    <label style="font-size:12px;color:#8a94a6;font-weight:600;">Precio ejemplo $</label>
+                    <input type="number" id="simPrice" value="100000" min="1" class="form-control form-control-sm" style="width:120px;">
+                  </div>
+                </div>
+                <div class="row g-2 text-center">
+                  <div class="col-4">
+                    <div class="p-2 rounded" style="background:#fff;border:1px solid #e2e8f0;">
+                      <div style="font-size:10px;color:#8a94a6;font-weight:700;text-transform:uppercase;">Precio Final</div>
+                      <div id="prevFinal" style="font-size:20px;font-weight:800;color:#1a2035;">$100.000</div>
+                      <div id="prevDescNote" style="font-size:11px;color:#16a34a;font-weight:600;"></div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="p-2 rounded" style="background:#fff;border:1px solid #e2e8f0;">
+                      <div style="font-size:10px;color:#8a94a6;font-weight:700;text-transform:uppercase;">Valor por Cuota</div>
+                      <div id="prevCuota" style="font-size:20px;font-weight:800;color:#2563eb;">$100.000</div>
+                      <div id="prevCuotaLabel" style="font-size:11px;color:#8a94a6;">1 cuota</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="p-2 rounded" style="background:#fff;border:1px solid #e2e8f0;">
+                      <div style="font-size:10px;color:#8a94a6;font-weight:700;text-transform:uppercase;">Total a Pagar</div>
+                      <div id="prevTotal" style="font-size:20px;font-weight:800;color:#7c3aed;">$100.000</div>
+                      <div id="prevRecargoNote" style="font-size:11px;color:#d97706;font-weight:600;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-check-lg me-1"></i>
@@ -106,4 +144,46 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+function calcPreview() {
+  const base      = parseFloat(document.getElementById('simPrice').value) || 100000;
+  const cuotas    = parseInt(document.querySelector('[name=installments]').value) || 1;
+  const recargo   = parseFloat(document.querySelector('[name=interest_rate]').value) || 0;
+  const descuento = parseFloat(document.querySelector('[name=discount_pct]').value) || 0;
+
+  // 1. Aplicar descuento directo al precio base
+  const precioFinal = base * (1 - descuento / 100);
+
+  // 2. Recargo % = recargo TOTAL sobre el precio con descuento aplicado
+  const totalAPagar = precioFinal * (1 + recargo / 100);
+
+  // 3. Valor de cada cuota
+  const cuota = totalAPagar / cuotas;
+
+  document.getElementById('prevFinal').textContent  = fmt(precioFinal);
+  document.getElementById('prevCuota').textContent  = fmt(cuota);
+  document.getElementById('prevTotal').textContent  = fmt(totalAPagar);
+  document.getElementById('prevCuotaLabel').textContent = cuotas + ' cuota' + (cuotas > 1 ? 's' : '');
+
+  document.getElementById('prevDescNote').textContent = descuento > 0
+    ? `↓ ${fmt(base - precioFinal)} de ahorro (${descuento}% OFF)`
+    : '';
+
+  document.getElementById('prevRecargoNote').textContent = recargo > 0
+    ? `↑ ${fmt(totalAPagar - precioFinal)} de recargo (${recargo}% total)`
+    : (cuotas > 1 ? '✓ Sin interés' : '');
+}
+
+['installments','interest_rate','discount_pct'].forEach(function(name) {
+  document.querySelector('[name='+name+']').addEventListener('input', calcPreview);
+});
+document.getElementById('simPrice').addEventListener('input', calcPreview);
+calcPreview();
+</script>
 {% endblock %}

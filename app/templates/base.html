@@ -35,7 +35,7 @@
       </li>
 
       <li class="nav-section">Inventario</li>
-      <li class="{% if request.endpoint and request.endpoint.startswith('inventory.') %}active{% endif %}">
+      <li class="{% if request.endpoint and request.endpoint.startswith('inventory.') and request.endpoint != 'inventory.categories' %}active{% endif %}">
         <a href="{{ url_for('inventory.index') }}">
           <i class="bi bi-box-seam"></i><span>Productos</span>
         </a>

@@ -5,18 +5,6 @@ from app.models.product import Product, Category
 from app.models.sale import Sale, SaleItem
 from app.models.customer import Customer
 from app.models.user import User
-from app.utils import admin_required
-from datetime import date, timedelta
-from sqlalchemy import func
-import json
-
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
-from flask_login import login_required, current_user
-from app import db
-from app.models.product import Product, Category
-from app.models.sale import Sale, SaleItem
-from app.models.customer import Customer
-from app.models.user import User
 from app.models.promotion import BankPromotion
 from app.utils import admin_required
 from datetime import date, timedelta
@@ -237,3 +225,87 @@ def delete_user(uid):
         db.session.commit()
         flash('Usuario eliminado.', 'success')
     return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/actualizar-imagenes', methods=['POST'])
+@login_required
+@admin_required
+def update_images():
+    U = 'https://images.unsplash.com/photo'
+    images = {
+        'SAN001': f'{U}-1585771724684-38269d6639fd?w=600&q=80&fit=crop',
+        'SAN002': f'{U}-1552321554-5fefe8c9ef14?w=600&q=80&fit=crop',
+        'SAN003': f'{U}-1620626011761-99316d1814b4?w=600&q=80&fit=crop',
+        'SAN004': f'{U}-1552321554-5fefe8c9ef14?w=600&q=80&fit=crop',
+        'SAN005': f'{U}-1585771724684-38269d6639fd?w=600&q=80&fit=crop',
+        'SAN006': f'{U}-1620626011761-99316d1814b4?w=600&q=80&fit=crop',
+        'SAN007': f'{U}-1552321554-5fefe8c9ef14?w=600&q=80&fit=crop',
+        'SAN008': f'{U}-1585771724684-38269d6639fd?w=600&q=80&fit=crop',
+        'GRI001': f'{U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'GRI002': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'GRI003': f'{U}-1518455374-6e9e4a5aafd5?w=600&q=80&fit=crop',
+        'GRI004': f'{U}-1524484485831-a92ffc0de03f?w=600&q=80&fit=crop',
+        'GRI005': f'{U}-1601924428597-a5af478e5f1c?w=600&q=80&fit=crop',
+        'GRI006': f'{U}-1558618666-fcd25c85cd64?w=600&q=80&fit=crop',
+        'GRI007': f'{U}-1524484485831-a92ffc0de03f?w=600&q=80&fit=crop',
+        'GRI008': f'{U}-1601924428597-a5af478e5f1c?w=600&q=80&fit=crop',
+        'GRI009': f'{U}-1518455374-6e9e4a5aafd5?w=600&q=80&fit=crop',
+        'GRI010': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'BAU001': f'{U}-1604709177225-055f99402ea3?w=600&q=80&fit=crop',
+        'BAU002': f'{U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'BAU003': f'{U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'BAU004': f'{U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'BAU005': f'{U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'BAU006': f'{U}-1604709177225-055f99402ea3?w=600&q=80&fit=crop',
+        'BAU007': f'{U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'BAU008': f'{U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'ACC001': f'{U}-1589939705384-5185137a7f0f?w=600&q=80&fit=crop',
+        'ACC002': f'{U}-1598300042738-d4e4e9d54cb3?w=600&q=80&fit=crop',
+        'ACC003': f'{U}-1589939705384-5185137a7f0f?w=600&q=80&fit=crop',
+        'ACC004': f'{U}-1598300042738-d4e4e9d54cb3?w=600&q=80&fit=crop',
+        'ACC005': f'{U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'ACC006': f'{U}-1589939705384-5185137a7f0f?w=600&q=80&fit=crop',
+        'ACC007': f'{U}-1598300042738-d4e4e9d54cb3?w=600&q=80&fit=crop',
+        'ACC008': f'{U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'ACC009': f'{U}-1589939705384-5185137a7f0f?w=600&q=80&fit=crop',
+        'ACC010': f'{U}-1598300042738-d4e4e9d54cb3?w=600&q=80&fit=crop',
+        'MAM001': f'{U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'MAM002': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'MAM003': f'{U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'MAM004': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'MAM005': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'MAM006': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'MAM007': f'{U}-1552566626-52f8b828add9?w=600&q=80&fit=crop',
+        'MAM008': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'MUE001': f'{U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'MUE002': f'{U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'MUE003': f'{U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'MUE004': f'{U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'MUE005': f'{U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'MUE006': f'{U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'MUE007': f'{U}-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop',
+        'MUE008': f'{U}-1507652313519-d4e9174996dd?w=600&q=80&fit=crop',
+        'CAL001': f'{U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'CAL002': f'{U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'CAL003': f'{U}-1518455374-6e9e4a5aafd5?w=600&q=80&fit=crop',
+        'CAL004': f'{U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'CAL005': f'{U}-1583845112203-29329902332e?w=600&q=80&fit=crop',
+        'CAL006': f'{U}-1517581177682-a085bb7ffb15?w=600&q=80&fit=crop',
+        'REV001': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'REV002': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'REV003': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'REV004': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'REV005': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'REV006': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+        'REV007': f'{U}-1545552696-f047cb5a9e51?w=600&q=80&fit=crop',
+        'REV008': f'{U}-1600566752355-35792fbb5b59?w=600&q=80&fit=crop',
+    }
+    n = 0
+    for sku, url in images.items():
+        p = Product.query.filter_by(sku=sku).first()
+        if p:
+            p.image_url = url
+            n += 1
+    db.session.commit()
+    flash(f'✅ {n} imágenes actualizadas correctamente.', 'success')
+    return redirect(url_for('admin.dashboard'))
