@@ -2,6 +2,25 @@ from app import db
 from datetime import datetime, timezone
 
 
+class BarcodeSequence(db.Model):
+    """Tabla de un solo registro: contador global de códigos internos."""
+    __tablename__ = 'barcode_sequence'
+
+    id       = db.Column(db.Integer, primary_key=True)   # siempre será 1
+    last_val = db.Column(db.Integer, default=0, nullable=False)
+
+    @classmethod
+    def next_val(cls):
+        """Retorna el siguiente valor de secuencia e incrementa atómicamente."""
+        row = cls.query.with_for_update().get(1)
+        if row is None:
+            row = cls(id=1, last_val=0)
+            db.session.add(row)
+        row.last_val += 1
+        db.session.flush()   # flush para que el valor quede disponible antes del commit
+        return row.last_val
+
+
 class Category(db.Model):
     __tablename__ = 'categories'
 
@@ -34,6 +53,7 @@ class Product(db.Model):
     min_stock = db.Column(db.Integer, default=5)
 
     image_url = db.Column(db.String(500))
+    internal_barcode = db.Column(db.String(16), unique=True, nullable=True, index=True)
     active = db.Column(db.Boolean, default=True)
     featured = db.Column(db.Boolean, default=False)  # Para pantalla clientes
 
@@ -67,3 +87,17 @@ class Product(db.Model):
 
     def __repr__(self):
         return f'<Product {self.sku} – {self.name}>'
+
+    def generate_internal_barcode(self):
+        """
+        Genera y asigna el código de barras interno de 16 dígitos:
+          CAT(3) + SUP(3) + PROD(4) + SEQ(6)
+        Persiste el valor en self.internal_barcode.
+        Llama a db.session.flush() antes de devolver para que el SEQ quede reservado.
+        """
+        cat  = str(self.category_id  or 0).zfill(3)[-3:]
+        sup  = str(self.supplier_id  or 0).zfill(3)[-3:]
+        prod = str(self.id           or 0).zfill(4)[-4:]
+        seq  = str(BarcodeSequence.next_val()).zfill(6)[-6:]
+        self.internal_barcode = f'{cat}{sup}{prod}{seq}'
+        return self.internal_barcode

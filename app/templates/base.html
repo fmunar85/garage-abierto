@@ -61,6 +61,11 @@
           <i class="bi bi-clock-history"></i><span>Movimientos Stock</span>
         </a>
       </li>
+      <li class="{% if request.endpoint == 'inventory.barcodes' %}active{% endif %}">
+        <a href="{{ url_for('inventory.barcodes') }}">
+          <i class="bi bi-upc-scan"></i><span>Códigos de Barras</span>
+        </a>
+      </li>
       {% endif %}
 
       <li class="nav-section">Comercial</li>

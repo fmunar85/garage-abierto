@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models.product import Product, Category
+from app.models.product import Product, Category, BarcodeSequence
 from app.models.supplier import Supplier
 from app.models.stock_movement import StockMovement
 from app.utils import admin_required
@@ -284,31 +284,93 @@ def product_label(pid):
     return render_template('inventory/label.html', product=product)
 
 
-# ── API: buscar producto por SKU (para recepción con escáner) ─────────────────
+@inventory_bp.route('/codigos-barras')
+@login_required
+def barcodes():
+    """Página de gestión de códigos de barras internos."""
+    products    = Product.query.order_by(Product.name).all()
+    total       = len(products)
+    con_codigo  = sum(1 for p in products if p.internal_barcode)
+    sin_codigo  = total - con_codigo
+    categorias  = sorted({p.category_obj.name for p in products if p.category_obj})
+    return render_template('inventory/barcodes.html',
+                           products=products,
+                           total=total,
+                           con_codigo=con_codigo,
+                           sin_codigo=sin_codigo,
+                           categorias=categorias)
+
+
+@inventory_bp.route('/producto/<int:pid>/generar-codbar', methods=['POST'])
+@login_required
+@admin_required
+def generate_barcode(pid):
+    """Genera (o regenera) el código de barras interno de 16 dígitos. Devuelve JSON."""
+    product = Product.query.get_or_404(pid)
+    product.generate_internal_barcode()
+    db.session.commit()
+    return jsonify({
+        'ok':               True,
+        'internal_barcode': product.internal_barcode,
+        'product_id':       product.id,
+    })
+
+
+@inventory_bp.route('/generar-todos-codbar', methods=['POST'])
+@login_required
+@admin_required
+def generate_barcodes_bulk():
+    """Genera códigos internos para todos los productos que no tienen uno. Devuelve JSON."""
+    products = Product.query.filter(
+        db.or_(Product.internal_barcode == None, Product.internal_barcode == '')
+    ).all()
+    n = 0
+    for p in products:
+        p.generate_internal_barcode()
+        n += 1
+    db.session.commit()
+    return jsonify({'ok': True, 'generados': n})
+
+
+# ── API: buscar producto por SKU o código interno (para recepción con escáner) ─
 @inventory_bp.route('/api/buscar-sku')
 @login_required
 def api_search_sku():
-    sku = request.args.get('sku', '').strip().upper()
-    if not sku:
+    raw = request.args.get('sku', '').strip().upper()
+    if not raw:
         return jsonify({'error': 'SKU vacío'}), 400
-    p = Product.query.filter(
-        db.or_(
-            Product.sku.ilike(sku),
-            Product.sku.ilike(f'%{sku}%'),
-        )
-    ).first()
+
+    # Buscar primero por código interno exacto (16 dígitos)
+    p = None
+    if raw.isdigit() and len(raw) == 16:
+        p = Product.query.filter_by(internal_barcode=raw).first()
+
+    # Luego por SKU exacto
     if not p:
-        return jsonify({'error': f'No se encontró ningún producto con SKU "{sku}"'}), 404
+        p = Product.query.filter(Product.sku.ilike(raw)).first()
+
+    # Luego por SKU parcial
+    if not p:
+        p = Product.query.filter(Product.sku.ilike(f'%{raw}%')).first()
+
+    # Último recurso: por código interno parcial
+    if not p and raw.isdigit():
+        p = Product.query.filter(Product.internal_barcode.ilike(f'%{raw}%')).first()
+
+    if not p:
+        return jsonify({'error': f'No se encontró ningún producto con código "{raw}"'}), 404
+
     return jsonify({
-        'id':       p.id,
-        'sku':      p.sku,
-        'name':     p.name,
-        'brand':    p.brand or '',
-        'category': p.category_obj.name if p.category_obj else '',
-        'price':    float(p.price),
-        'cost':     float(p.cost_price) if p.cost_price else 0,
-        'stock':    p.stock,
-        'image':    p.image_src or '',
+        'id':               p.id,
+        'sku':              p.sku,
+        'internal_barcode': p.internal_barcode or '',
+        'name':             p.name,
+        'brand':            p.brand or '',
+        'category':         p.category_obj.name if p.category_obj else '',
+        'price':            float(p.price),
+        'cost':             float(p.cost_price) if p.cost_price else 0,
+        'stock':            p.stock,
+        'image':            p.image_src or '',
     })
 
 

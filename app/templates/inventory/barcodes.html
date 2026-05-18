@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Códigos de Barras Internos{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- ── Encabezado ── -->
+  <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">
+        <i class="bi bi-upc-scan me-2 text-primary"></i>Códigos de Barras Internos
+      </h2>
+      <p class="text-muted small mb-0">Sistema de identificación interno de 16 dígitos</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-success" id="btnGenerarTodos"
+              {% if sin_codigo == 0 %}disabled{% endif %}>
+        <i class="bi bi-magic me-1"></i>
+        Generar Todos los Faltantes
+        {% if sin_codigo > 0 %}
+          <span class="badge bg-warning text-dark ms-1">{{ sin_codigo }}</span>
+        {% endif %}
+      </button>
+      <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Estadísticas ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="fs-1 fw-bold text-primary">{{ total }}</div>
+        <div class="text-muted small">Total Productos</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="fs-1 fw-bold text-success">{{ con_codigo }}</div>
+        <div class="text-muted small">Con Código Interno</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="fs-1 fw-bold text-warning">{{ sin_codigo }}</div>
+        <div class="text-muted small">Sin Código Interno</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="fs-1 fw-bold text-info">
+          {% if total > 0 %}{{ ((con_codigo / total) * 100)|round(0)|int }}%{% else %}0%{% endif %}
+        </div>
+        <div class="text-muted small">Cobertura</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Progreso de cobertura ── -->
+  {% if total > 0 %}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-2">
+      <div class="d-flex justify-content-between small text-muted mb-1">
+        <span>Cobertura de códigos internos</span>
+        <span>{{ con_codigo }}/{{ total }}</span>
+      </div>
+      <div class="progress" style="height: 8px;">
+        <div class="progress-bar bg-success" role="progressbar"
+             style="width: {{ ((con_codigo / total) * 100)|round(0) }}%"></div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Filtros ── -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-5">
+          <input type="text" id="filtroTexto" class="form-control form-control-sm"
+                 placeholder="🔍 Filtrar por SKU, nombre o código interno...">
+        </div>
+        <div class="col-md-3">
+          <select id="filtroEstado" class="form-select form-select-sm">
+            <option value="todos">Todos los productos</option>
+            <option value="con">Con código interno</option>
+            <option value="sin">Sin código interno</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select id="filtroCategoria" class="form-select form-select-sm">
+            <option value="">Todas las categorías</option>
+            {% for cat_name in categorias %}
+            <option value="{{ cat_name }}">{{ cat_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 text-end">
+          <small class="text-muted" id="contadorVisible">{{ products|length }} productos</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabla ── -->
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="tablaProductos">
+        <thead class="table-light">
+          <tr>
+            <th style="width:90px">SKU</th>
+            <th>Producto</th>
+            <th style="width:130px">Categoría</th>
+            <th style="width:140px">Proveedor</th>
+            <th style="width:230px">Código Interno (16 dígitos)</th>
+            <th style="width:200px" class="d-none d-lg-table-cell">Vista Previa</th>
+            <th style="width:120px" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr class="fila-producto"
+              data-sku="{{ p.sku|lower }}"
+              data-nombre="{{ p.name|lower }}"
+              data-cod="{{ (p.internal_barcode or '')|lower }}"
+              data-estado="{{ 'con' if p.internal_barcode else 'sin' }}"
+              data-cat="{{ p.category_obj.name if p.category_obj else '' }}">
+            <td>
+              <code class="text-primary">{{ p.sku }}</code>
+            </td>
+            <td>
+              <div class="fw-medium">{{ p.name }}</div>
+              {% if p.brand %}
+              <div class="text-muted small">{{ p.brand }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary border">
+                {{ p.category_obj.name if p.category_obj else '—' }}
+              </span>
+            </td>
+            <td class="text-muted small">
+              {{ p.supplier.name if p.supplier else '—' }}
+            </td>
+            <td>
+              {% if p.internal_barcode %}
+              <div class="d-flex align-items-center gap-1">
+                <code class="text-success fw-bold fs-6 letra-codigo" id="cod-{{ p.id }}">
+                  {{ p.internal_barcode }}
+                </code>
+                <button class="btn btn-sm btn-outline-secondary p-1 btn-copiar"
+                        data-codigo="{{ p.internal_barcode }}"
+                        title="Copiar">
+                  <i class="bi bi-clipboard" style="font-size:0.75rem"></i>
+                </button>
+              </div>
+              {% else %}
+              <span class="text-muted fst-italic small">Sin código</span>
+              {% endif %}
+            </td>
+            <td class="d-none d-lg-table-cell">
+              {% if p.internal_barcode %}
+              <svg class="barcode-preview" id="bar-{{ p.id }}"
+                   data-value="{{ p.internal_barcode }}"></svg>
+              {% else %}
+              <div class="text-muted small fst-italic">—</div>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm {% if p.internal_barcode %}btn-outline-warning{% else %}btn-success{% endif %} btn-generar"
+                        data-pid="{{ p.id }}"
+                        title="{% if p.internal_barcode %}Regenerar código{% else %}Generar código{% endif %}">
+                  <i class="bi bi-{% if p.internal_barcode %}arrow-repeat{% else %}plus-circle{% endif %}"></i>
+                </button>
+                {% if p.internal_barcode %}
+                <a href="{{ url_for('inventory.product_label', pid=p.id) }}"
+                   class="btn btn-sm btn-outline-primary" title="Imprimir etiqueta"
+                   target="_blank">
+                  <i class="bi bi-tag"></i>
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if not products %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-inbox fs-1"></i>
+      <p class="mt-2">No hay productos cargados.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── Toast ── -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+  <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastTexto"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+// ── Renderizar barcodes ────────────────────────────────────────────────────────
+function renderBarcodes() {
+  document.querySelectorAll('.barcode-preview[data-value]').forEach(svg => {
+    try {
+      JsBarcode(svg, svg.dataset.value, {
+        format:      'CODE128',
+        width:       1,
+        height:      30,
+        displayValue: false,
+        margin:      2,
+      });
+    } catch(e) { console.warn('barcode error', e); }
+  });
+}
+document.addEventListener('DOMContentLoaded', renderBarcodes);
+
+// ── Toast helper ──────────────────────────────────────────────────────────────
+function mostrarToast(msg, tipo = 'success') {
+  const el = document.getElementById('toastMsg');
+  el.className = `toast align-items-center text-white border-0 bg-${tipo}`;
+  document.getElementById('toastTexto').textContent = msg;
+  bootstrap.Toast.getOrCreateInstance(el, { delay: 3000 }).show();
+}
+
+// ── Copiar al portapapeles ────────────────────────────────────────────────────
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-copiar');
+  if (!btn) return;
+  try {
+    await navigator.clipboard.writeText(btn.dataset.codigo);
+    const icon = btn.querySelector('i');
+    icon.className = 'bi bi-check2';
+    setTimeout(() => icon.className = 'bi bi-clipboard', 2000);
+  } catch {
+    mostrarToast('No se pudo copiar', 'danger');
+  }
+});
+
+// ── Generar código para UN producto ──────────────────────────────────────────
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-generar');
+  if (!btn) return;
+  const pid = btn.dataset.pid;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+  try {
+    const res  = await fetch(`/inventario/producto/${pid}/generar-codbar`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al generar');
+
+    mostrarToast(`Código generado: ${data.internal_barcode}`);
+
+    // Actualizar la fila sin recargar
+    const fila = btn.closest('tr');
+
+    // Columna código
+    const tdCod = fila.querySelector('td:nth-child(5)');
+    tdCod.innerHTML = `
+      <div class="d-flex align-items-center gap-1">
+        <code class="text-success fw-bold fs-6 letra-codigo" id="cod-${pid}">
+          ${data.internal_barcode}
+        </code>
+        <button class="btn btn-sm btn-outline-secondary p-1 btn-copiar"
+                data-codigo="${data.internal_barcode}" title="Copiar">
+          <i class="bi bi-clipboard" style="font-size:0.75rem"></i>
+        </button>
+      </div>`;
+
+    // Columna preview
+    const tdBar = fila.querySelector('td.d-none');
+    if (tdBar) {
+      tdBar.innerHTML = `<svg class="barcode-preview" data-value="${data.internal_barcode}"></svg>`;
+      const svg = tdBar.querySelector('svg');
+      JsBarcode(svg, data.internal_barcode, {
+        format:'CODE128', width:1, height:30, displayValue:false, margin:2
+      });
+    }
+
+    // Botón → regenerar + etiqueta
+    btn.className = 'btn btn-sm btn-outline-warning btn-generar';
+    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+    btn.disabled  = false;
+    btn.title     = 'Regenerar código';
+
+    // Agregar botón etiqueta si no existe
+    if (!fila.querySelector('a.btn-outline-primary')) {
+      const wrap = btn.closest('.d-flex');
+      const a    = document.createElement('a');
+      a.href      = `/inventario/producto/${pid}/etiqueta`;
+      a.target    = '_blank';
+      a.className = 'btn btn-sm btn-outline-primary';
+      a.title     = 'Imprimir etiqueta';
+      a.innerHTML = '<i class="bi bi-tag"></i>';
+      wrap.appendChild(a);
+    }
+
+    // Actualizar datos del filtro
+    fila.dataset.cod    = data.internal_barcode.toLowerCase();
+    fila.dataset.estado = 'con';
+
+    actualizarEstadisticas();
+
+  } catch(err) {
+    mostrarToast(err.message, 'danger');
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="bi bi-plus-circle"></i>';
+  }
+});
+
+// ── Generar TODOS los faltantes ───────────────────────────────────────────────
+document.getElementById('btnGenerarTodos').addEventListener('click', async () => {
+  const btn = document.getElementById('btnGenerarTodos');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Generando...';
+
+  try {
+    const res  = await fetch('/inventario/generar-todos-codbar', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error');
+
+    mostrarToast(`${data.generados} códigos generados correctamente`);
+
+    // Recargar para actualizar la tabla completa
+    setTimeout(() => location.reload(), 1500);
+
+  } catch(err) {
+    mostrarToast(err.message, 'danger');
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="bi bi-magic me-1"></i>Generar Todos los Faltantes';
+  }
+});
+
+// ── Filtros de tabla ──────────────────────────────────────────────────────────
+function filtrarTabla() {
+  const texto  = document.getElementById('filtroTexto').value.toLowerCase();
+  const estado = document.getElementById('filtroEstado').value;
+  const cat    = document.getElementById('filtroCategoria').value;
+  const filas  = document.querySelectorAll('.fila-producto');
+  let visible  = 0;
+
+  filas.forEach(f => {
+    const okTexto  = !texto  || f.dataset.sku.includes(texto) ||
+                                f.dataset.nombre.includes(texto) ||
+                                f.dataset.cod.includes(texto);
+    const okEstado = estado === 'todos' || f.dataset.estado === estado;
+    const okCat    = !cat   || f.dataset.cat === cat;
+
+    const show = okTexto && okEstado && okCat;
+    f.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.getElementById('contadorVisible').textContent = `${visible} producto${visible !== 1 ? 's' : ''}`;
+}
+
+['filtroTexto','filtroEstado','filtroCategoria'].forEach(id =>
+  document.getElementById(id).addEventListener('input', filtrarTabla)
+);
+
+// ── Actualizar estadísticas en vivo ───────────────────────────────────────────
+function actualizarEstadisticas() {
+  const total  = document.querySelectorAll('.fila-producto').length;
+  const con    = document.querySelectorAll('.fila-producto[data-estado="con"]').length;
+  const sin    = total - con;
+  const pct    = total > 0 ? Math.round((con / total) * 100) : 0;
+
+  // Actualizar tarjetas (índice 0=total,1=con,2=sin,3=pct)
+  const cards = document.querySelectorAll('.card.border-0.shadow-sm.text-center .fs-1');
+  if (cards.length >= 4) {
+    cards[0].textContent = total;
+    cards[1].textContent = con;
+    cards[2].textContent = sin;
+    cards[3].textContent = pct + '%';
+  }
+
+  // Progreso
+  const bar = document.querySelector('.progress-bar');
+  if (bar) bar.style.width = pct + '%';
+
+  // Botón "Generar Todos"
+  const btnTodos = document.getElementById('btnGenerarTodos');
+  btnTodos.disabled = sin === 0;
+  const badge = btnTodos.querySelector('.badge');
+  if (badge) badge.textContent = sin;
+}
+</script>
+{% endblock %}
