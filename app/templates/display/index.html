@@ -65,18 +65,22 @@
       overflow: hidden;
       white-space: nowrap;
     }
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      will-change: transform;
+    }
     .ticker-inner {
-      display: inline-block;
-      animation: ticker 120s linear infinite;
-      padding-left: 100%;
+      display: flex;
+      flex-shrink: 0;
     }
     .ticker-inner span {
       margin-right: 80px;
       font-size: 14px;
       color: var(--text-muted);
+      white-space: nowrap;
     }
     .ticker-inner span strong { color: var(--gold); }
-    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
 
     /* ── CATEGORY TABS ── */
@@ -288,14 +292,18 @@
 
 <!-- TICKER -->
 {% if featured %}
-<div class="ticker-bar">
-  <div class="ticker-inner">
-    {% for p in featured %}
-    <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
-    {% endfor %}
-    {% for p in featured %}
-    <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
-    {% endfor %}
+<div class="ticker-bar" id="tickerBar">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-inner" id="tickerA">
+      {% for p in featured %}
+      <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
+      {% endfor %}
+    </div>
+    <div class="ticker-inner" id="tickerB" aria-hidden="true">
+      {% for p in featured %}
+      <span>⭐ <strong>{{ p.name }}</strong> — {{ p.price | currency }}</span>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endif %}
@@ -497,6 +505,41 @@ function closeModalIfOverlay(e) {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── TICKER JS LOOP ── */
+(function () {
+  const track = document.getElementById('tickerTrack');
+  const blockA = document.getElementById('tickerA');
+  if (!track || !blockA) return;
+
+  const PX_PER_SECOND = 90; // velocidad en píxeles/segundo — ajustá este valor
+
+  let pos = 0;        // posición actual (px, negativa = mover a la izquierda)
+  let last = null;
+
+  function getBlockWidth() {
+    return blockA.getBoundingClientRect().width;
+  }
+
+  function step(ts) {
+    if (!last) last = ts;
+    const elapsed = (ts - last) / 1000;   // segundos transcurridos
+    last = ts;
+
+    pos -= PX_PER_SECOND * elapsed;
+
+    const w = getBlockWidth();
+    // Cuando ya recorrimos un bloque completo, reiniciamos sin salto visible
+    if (Math.abs(pos) >= w) {
+      pos += w;
+    }
+
+    track.style.transform = `translateX(${pos}px)`;
+    requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+})();
 </script>
 </body>
 </html>
