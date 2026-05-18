@@ -83,7 +83,7 @@ def create_app():
 
     # Auto-create any new tables (safe: does not drop existing ones)
     with app.app_context():
-        from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion  # noqa
+        from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion, ProductUnit  # noqa
         db.create_all()
 
         # ── Migraciones de columnas nuevas (ALTER TABLE si no existen) ──────

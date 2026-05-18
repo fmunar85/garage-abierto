@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user
 from app import db
-from app.models.product import Product, Category, BarcodeSequence
+from app.models.product import Product, Category, BarcodeSequence, ProductUnit
 from app.models.supplier import Supplier
 from app.models.stock_movement import StockMovement
 from app.utils import admin_required
@@ -284,52 +284,103 @@ def product_label(pid):
     return render_template('inventory/label.html', product=product)
 
 
+
 @inventory_bp.route('/codigos-barras')
 @login_required
 def barcodes():
-    """Página de gestión de códigos de barras internos."""
-    products    = Product.query.order_by(Product.name).all()
-    total       = len(products)
-    con_codigo  = sum(1 for p in products if p.internal_barcode)
-    sin_codigo  = total - con_codigo
-    categorias  = sorted({p.category_obj.name for p in products if p.category_obj})
+    """Página de gestión de unidades físicas con código de barras."""
+    products   = Product.query.filter_by(active=True).order_by(Product.name).all()
+    categories = Category.query.order_by(Category.name).all()
+    suppliers  = Supplier.query.filter_by(active=True).order_by(Supplier.name).all()
+
+    # Conteos de unidades por producto
+    from sqlalchemy import func
+    unit_counts = dict(
+        db.session.query(ProductUnit.product_id, func.count(ProductUnit.id))
+        .group_by(ProductUnit.product_id)
+        .all()
+    )
+    # Última recepción por producto
+    last_reception = dict(
+        db.session.query(ProductUnit.product_id, func.max(ProductUnit.received_at))
+        .group_by(ProductUnit.product_id)
+        .all()
+    )
+
+    total_products = len(products)
+    total_units    = sum(unit_counts.values()) if unit_counts else 0
+    sin_unidades   = sum(1 for p in products if unit_counts.get(p.id, 0) == 0)
+
     return render_template('inventory/barcodes.html',
                            products=products,
-                           total=total,
-                           con_codigo=con_codigo,
-                           sin_codigo=sin_codigo,
-                           categorias=categorias)
+                           categories=categories,
+                           suppliers=suppliers,
+                           unit_counts=unit_counts,
+                           last_reception=last_reception,
+                           total_products=total_products,
+                           total_units=total_units,
+                           sin_unidades=sin_unidades)
 
 
-@inventory_bp.route('/producto/<int:pid>/generar-codbar', methods=['POST'])
+@inventory_bp.route('/recibir-unidades', methods=['POST'])
 @login_required
 @admin_required
-def generate_barcode(pid):
-    """Genera (o regenera) el código de barras interno de 16 dígitos. Devuelve JSON."""
+def receive_units():
+    """Genera N ProductUnit para un producto. Devuelve JSON con los barcodes generados."""
+    data       = request.get_json() or {}
+    pid        = data.get('product_id')
+    qty        = int(data.get('quantity', 0))
+
+    if not pid or qty <= 0:
+        return jsonify({'error': 'Producto y cantidad requeridos'}), 400
+    if qty > 500:
+        return jsonify({'error': 'Máximo 500 unidades por operación'}), 400
+
     product = Product.query.get_or_404(pid)
-    product.generate_internal_barcode()
+    units   = ProductUnit.generate_for_product(product, qty, user_id=current_user.id)
     db.session.commit()
+
     return jsonify({
-        'ok':               True,
-        'internal_barcode': product.internal_barcode,
-        'product_id':       product.id,
+        'ok':       True,
+        'product':  product.name,
+        'sku':      product.sku,
+        'quantity': qty,
+        'barcodes': [u.barcode for u in units],
+        'ids':      [u.id for u in units],
     })
 
 
-@inventory_bp.route('/generar-todos-codbar', methods=['POST'])
+@inventory_bp.route('/unidad/<int:uid>', methods=['DELETE'])
 @login_required
 @admin_required
-def generate_barcodes_bulk():
-    """Genera códigos internos para todos los productos que no tienen uno. Devuelve JSON."""
-    products = Product.query.filter(
-        db.or_(Product.internal_barcode == None, Product.internal_barcode == '')
-    ).all()
-    n = 0
-    for p in products:
-        p.generate_internal_barcode()
-        n += 1
+def delete_unit(uid):
+    """Elimina una unidad física (ProductUnit)."""
+    unit = ProductUnit.query.get_or_404(uid)
+    db.session.delete(unit)
     db.session.commit()
-    return jsonify({'ok': True, 'generados': n})
+    return jsonify({'ok': True, 'deleted_id': uid})
+
+
+@inventory_bp.route('/api/producto/<int:pid>/unidades')
+@login_required
+def api_product_units(pid):
+    """Devuelve JSON con todas las unidades de un producto."""
+    product = Product.query.get_or_404(pid)
+    units   = ProductUnit.query.filter_by(product_id=pid)\
+                               .order_by(ProductUnit.received_at.desc())\
+                               .all()
+    return jsonify({
+        'product': {'id': product.id, 'name': product.name, 'sku': product.sku},
+        'units': [
+            {
+                'id':          u.id,
+                'barcode':     u.barcode,
+                'status':      u.status,
+                'received_at': u.received_at.strftime('%d/%m/%Y %H:%M') if u.received_at else '—',
+            }
+            for u in units
+        ],
+    })
 
 
 # ── API: buscar producto por SKU o código interno (para recepción con escáner) ─
@@ -340,37 +391,35 @@ def api_search_sku():
     if not raw:
         return jsonify({'error': 'SKU vacío'}), 400
 
-    # Buscar primero por código interno exacto (16 dígitos)
+    # Buscar por barcode de unidad (16 dígitos numéricos)
     p = None
     if raw.isdigit() and len(raw) == 16:
-        p = Product.query.filter_by(internal_barcode=raw).first()
+        unit = ProductUnit.query.filter_by(barcode=raw).first()
+        if unit:
+            p = unit.product
 
-    # Luego por SKU exacto
+    # Por SKU exacto
     if not p:
         p = Product.query.filter(Product.sku.ilike(raw)).first()
 
-    # Luego por SKU parcial
+    # Por SKU parcial
     if not p:
         p = Product.query.filter(Product.sku.ilike(f'%{raw}%')).first()
-
-    # Último recurso: por código interno parcial
-    if not p and raw.isdigit():
-        p = Product.query.filter(Product.internal_barcode.ilike(f'%{raw}%')).first()
 
     if not p:
         return jsonify({'error': f'No se encontró ningún producto con código "{raw}"'}), 404
 
     return jsonify({
-        'id':               p.id,
-        'sku':              p.sku,
-        'internal_barcode': p.internal_barcode or '',
-        'name':             p.name,
-        'brand':            p.brand or '',
-        'category':         p.category_obj.name if p.category_obj else '',
-        'price':            float(p.price),
-        'cost':             float(p.cost_price) if p.cost_price else 0,
-        'stock':            p.stock,
-        'image':            p.image_src or '',
+        'id':       p.id,
+        'sku':      p.sku,
+        'name':     p.name,
+        'brand':    p.brand or '',
+        'category': p.category_obj.name if p.category_obj else '',
+        'price':    float(p.price),
+        'cost':     float(p.cost_price) if p.cost_price else 0,
+        'stock':    p.stock,
+        'image':    p.image_src or '',
+        'units':    ProductUnit.query.filter_by(product_id=p.id, status='disponible').count(),
     })
 
 

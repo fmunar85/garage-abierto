@@ -101,3 +101,42 @@ class Product(db.Model):
         seq  = str(BarcodeSequence.next_val()).zfill(6)[-6:]
         self.internal_barcode = f'{cat}{sup}{prod}{seq}'
         return self.internal_barcode
+
+
+class ProductUnit(db.Model):
+    """Una unidad física de un producto, identificada por su código de barras único."""
+    __tablename__ = 'product_units'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    barcode     = db.Column(db.String(16), unique=True, nullable=False, index=True)
+    product_id  = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    received_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    status      = db.Column(db.String(20), default='disponible')  # disponible | vendida | dañada
+
+    product = db.relationship('Product', backref=db.backref('units', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<ProductUnit {self.barcode}>'
+
+    @classmethod
+    def generate_for_product(cls, product, quantity, user_id=None):
+        """
+        Crea `quantity` instancias de ProductUnit con barcodes únicos consecutivos.
+        Formato: CAT(3) + SUP(3) + PROD(4) + SEQ(6) = 16 dígitos
+        Devuelve la lista de objetos creados (SIN hacer commit).
+        """
+        cat  = str(product.category_id or 0).zfill(3)[-3:]
+        sup  = str(product.supplier_id  or 0).zfill(3)[-3:]
+        prod = str(product.id           or 0).zfill(4)[-4:]
+        units = []
+        for _ in range(quantity):
+            seq  = str(BarcodeSequence.next_val()).zfill(6)[-6:]
+            unit = cls(
+                barcode    = f'{cat}{sup}{prod}{seq}',
+                product_id = product.id,
+                received_by= user_id,
+            )
+            db.session.add(unit)
+            units.append(unit)
+        return units

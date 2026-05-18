@@ -1,6 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Códigos de Barras Internos{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Códigos de Barras — Unidades{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,19 +7,12 @@
   <!-- ── Encabezado ── -->
   <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
     <div>
-      <h2 class="mb-0">
-        <i class="bi bi-upc-scan me-2 text-primary"></i>Códigos de Barras Internos
-      </h2>
-      <p class="text-muted small mb-0">Sistema de identificación interno de 16 dígitos</p>
+      <h2 class="mb-0"><i class="bi bi-upc-scan me-2 text-primary"></i>Códigos de Barras por Unidad</h2>
+      <p class="text-muted small mb-0">Cada unidad física recibe su propio código de 16 dígitos único</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-      <button class="btn btn-success" id="btnGenerarTodos"
-              {% if sin_codigo == 0 %}disabled{% endif %}>
-        <i class="bi bi-magic me-1"></i>
-        Generar Todos los Faltantes
-        {% if sin_codigo > 0 %}
-          <span class="badge bg-warning text-dark ms-1">{{ sin_codigo }}</span>
-        {% endif %}
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalIngreso">
+        <i class="bi bi-plus-circle me-1"></i>Ingresar Unidades
       </button>
       <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Volver
@@ -32,47 +24,29 @@
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
       <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fs-1 fw-bold text-primary">{{ total }}</div>
-        <div class="text-muted small">Total Productos</div>
+        <div class="fs-1 fw-bold text-primary">{{ total_products }}</div>
+        <div class="text-muted small">Productos Activos</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fs-1 fw-bold text-success">{{ con_codigo }}</div>
-        <div class="text-muted small">Con Código Interno</div>
+        <div class="fs-1 fw-bold text-success">{{ total_units }}</div>
+        <div class="text-muted small">Unidades con Código</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fs-1 fw-bold text-warning">{{ sin_codigo }}</div>
-        <div class="text-muted small">Sin Código Interno</div>
+        <div class="fs-1 fw-bold text-warning">{{ sin_unidades }}</div>
+        <div class="text-muted small">Productos Sin Unidades</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fs-1 fw-bold text-info">
-          {% if total > 0 %}{{ ((con_codigo / total) * 100)|round(0)|int }}%{% else %}0%{% endif %}
-        </div>
-        <div class="text-muted small">Cobertura</div>
+        <div class="fs-1 fw-bold text-info">{{ total_products - sin_unidades }}</div>
+        <div class="text-muted small">Productos con ≥1 Unidad</div>
       </div>
     </div>
   </div>
-
-  <!-- ── Progreso de cobertura ── -->
-  {% if total > 0 %}
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body py-2">
-      <div class="d-flex justify-content-between small text-muted mb-1">
-        <span>Cobertura de códigos internos</span>
-        <span>{{ con_codigo }}/{{ total }}</span>
-      </div>
-      <div class="progress" style="height: 8px;">
-        <div class="progress-bar bg-success" role="progressbar"
-             style="width: {{ ((con_codigo / total) * 100)|round(0) }}%"></div>
-      </div>
-    </div>
-  </div>
-  {% endif %}
 
   <!-- ── Filtros ── -->
   <div class="card border-0 shadow-sm mb-3">
@@ -80,20 +54,20 @@
       <div class="row g-2 align-items-center">
         <div class="col-md-5">
           <input type="text" id="filtroTexto" class="form-control form-control-sm"
-                 placeholder="🔍 Filtrar por SKU, nombre o código interno...">
+                 placeholder="🔍 Filtrar por SKU, nombre, categoría...">
         </div>
         <div class="col-md-3">
           <select id="filtroEstado" class="form-select form-select-sm">
             <option value="todos">Todos los productos</option>
-            <option value="con">Con código interno</option>
-            <option value="sin">Sin código interno</option>
+            <option value="con">Con unidades</option>
+            <option value="sin">Sin unidades</option>
           </select>
         </div>
         <div class="col-md-2">
-          <select id="filtroCategoria" class="form-select form-select-sm">
+          <select id="filtroCat" class="form-select form-select-sm">
             <option value="">Todas las categorías</option>
-            {% for cat_name in categorias %}
-            <option value="{{ cat_name }}">{{ cat_name }}</option>
+            {% for cat in categories %}
+            <option value="{{ cat.name }}">{{ cat.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -104,7 +78,7 @@
     </div>
   </div>
 
-  <!-- ── Tabla ── -->
+  <!-- ── Tabla principal ── -->
   <div class="card border-0 shadow-sm">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" id="tablaProductos">
@@ -114,71 +88,58 @@
             <th>Producto</th>
             <th style="width:130px">Categoría</th>
             <th style="width:140px">Proveedor</th>
-            <th style="width:230px">Código Interno (16 dígitos)</th>
-            <th style="width:200px" class="d-none d-lg-table-cell">Vista Previa</th>
-            <th style="width:120px" class="text-end">Acciones</th>
+            <th style="width:90px" class="text-center">Unidades</th>
+            <th style="width:160px">Último Ingreso</th>
+            <th style="width:130px" class="text-end">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {% for p in products %}
+          {% set n_units = unit_counts.get(p.id, 0) %}
+          {% set last_rec = last_reception.get(p.id) %}
           <tr class="fila-producto"
+              data-pid="{{ p.id }}"
               data-sku="{{ p.sku|lower }}"
               data-nombre="{{ p.name|lower }}"
-              data-cod="{{ (p.internal_barcode or '')|lower }}"
-              data-estado="{{ 'con' if p.internal_barcode else 'sin' }}"
-              data-cat="{{ p.category_obj.name if p.category_obj else '' }}">
-            <td>
-              <code class="text-primary">{{ p.sku }}</code>
-            </td>
+              data-cat="{{ p.category_obj.name if p.category_obj else '' }}"
+              data-estado="{{ 'con' if n_units > 0 else 'sin' }}">
+            <td><code class="text-primary">{{ p.sku }}</code></td>
             <td>
               <div class="fw-medium">{{ p.name }}</div>
-              {% if p.brand %}
-              <div class="text-muted small">{{ p.brand }}</div>
-              {% endif %}
+              {% if p.brand %}<div class="text-muted small">{{ p.brand }}</div>{% endif %}
             </td>
             <td>
               <span class="badge bg-secondary-subtle text-secondary border">
                 {{ p.category_obj.name if p.category_obj else '—' }}
               </span>
             </td>
-            <td class="text-muted small">
-              {{ p.supplier.name if p.supplier else '—' }}
-            </td>
-            <td>
-              {% if p.internal_barcode %}
-              <div class="d-flex align-items-center gap-1">
-                <code class="text-success fw-bold fs-6 letra-codigo" id="cod-{{ p.id }}">
-                  {{ p.internal_barcode }}
-                </code>
-                <button class="btn btn-sm btn-outline-secondary p-1 btn-copiar"
-                        data-codigo="{{ p.internal_barcode }}"
-                        title="Copiar">
-                  <i class="bi bi-clipboard" style="font-size:0.75rem"></i>
-                </button>
-              </div>
+            <td class="text-muted small">{{ p.supplier.name if p.supplier else '—' }}</td>
+            <td class="text-center">
+              {% if n_units > 0 %}
+              <span class="badge bg-success rounded-pill fs-6">{{ n_units }}</span>
               {% else %}
-              <span class="text-muted fst-italic small">Sin código</span>
+              <span class="badge bg-danger rounded-pill fs-6">0</span>
               {% endif %}
             </td>
-            <td class="d-none d-lg-table-cell">
-              {% if p.internal_barcode %}
-              <svg class="barcode-preview" id="bar-{{ p.id }}"
-                   data-value="{{ p.internal_barcode }}"></svg>
-              {% else %}
-              <div class="text-muted small fst-italic">—</div>
-              {% endif %}
+            <td class="small text-muted">
+              {% if last_rec %}{{ last_rec.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}
             </td>
             <td class="text-end">
               <div class="d-flex justify-content-end gap-1">
-                <button class="btn btn-sm {% if p.internal_barcode %}btn-outline-warning{% else %}btn-success{% endif %} btn-generar"
-                        data-pid="{{ p.id }}"
-                        title="{% if p.internal_barcode %}Regenerar código{% else %}Generar código{% endif %}">
-                  <i class="bi bi-{% if p.internal_barcode %}arrow-repeat{% else %}plus-circle{% endif %}"></i>
+                <button class="btn btn-sm btn-outline-success btn-quick-add"
+                        data-pid="{{ p.id }}" data-nombre="{{ p.name }}" data-sku="{{ p.sku }}"
+                        title="Ingresar unidades">
+                  <i class="bi bi-plus"></i>
                 </button>
-                {% if p.internal_barcode %}
+                <button class="btn btn-sm btn-outline-primary btn-ver-unidades"
+                        data-pid="{{ p.id }}"
+                        data-nombre="{{ p.name }} ({{ p.sku }})"
+                        title="Ver detalle de unidades">
+                  <i class="bi bi-list-ul"></i>
+                </button>
+                {% if n_units > 0 %}
                 <a href="{{ url_for('inventory.product_label', pid=p.id) }}"
-                   class="btn btn-sm btn-outline-primary" title="Imprimir etiqueta"
-                   target="_blank">
+                   class="btn btn-sm btn-outline-secondary" title="Imprimir etiqueta" target="_blank">
                   <i class="bi bi-tag"></i>
                 </a>
                 {% endif %}
@@ -189,19 +150,136 @@
         </tbody>
       </table>
     </div>
-
     {% if not products %}
     <div class="text-center py-5 text-muted">
-      <i class="bi bi-inbox fs-1"></i>
-      <p class="mt-2">No hay productos cargados.</p>
+      <i class="bi bi-inbox fs-1"></i><p class="mt-2">No hay productos cargados.</p>
     </div>
     {% endif %}
   </div>
 
 </div><!-- /container -->
 
-<!-- ── Toast ── -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+<!-- ═══════════════════ MODAL: Ingresar Unidades ═══════════════════ -->
+<div class="modal fade" id="modalIngreso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Ingresar Unidades con Código de Barras</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Categoría <span class="text-muted small">(para filtrar)</span></label>
+            <select id="ingCat" class="form-select">
+              <option value="">— Todas —</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label fw-medium">Producto <span class="text-danger">*</span></label>
+            <select id="ingProducto" class="form-select">
+              <option value="">— Seleccioná un producto —</option>
+              {% for p in products %}
+              <option value="{{ p.id }}"
+                      data-cat="{{ p.category_id or '' }}"
+                      data-sup="{{ p.supplier.name if p.supplier else '—' }}"
+                      data-sku="{{ p.sku }}">
+                {{ p.sku }} — {{ p.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div id="ingInfoProducto" class="alert alert-info mt-3 d-none">
+          <strong id="ingNombre"></strong>
+          <div class="small mt-1">
+            Proveedor: <span id="ingProveedor" class="fw-medium"></span> &nbsp;|&nbsp;
+            Unidades ya registradas: <span id="ingUnidadesActuales" class="fw-medium"></span>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Cantidad a ingresar <span class="text-danger">*</span></label>
+            <input type="number" id="ingCantidad" class="form-control" min="1" max="500" value="1">
+            <div class="form-text">1 código único por unidad física</div>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label fw-medium">Vista previa del formato</label>
+            <div class="bg-light rounded p-2 text-center">
+              <div id="ingPreviewBar"><span class="text-muted fst-italic small">Seleccioná un producto...</span></div>
+              <div id="ingPreviewCodigos" class="small text-success fw-bold font-monospace mt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="ingResultado" class="d-none mt-3">
+          <div class="alert alert-success mb-2"><strong id="ingResultadoMsg"></strong></div>
+          <div id="ingListaCodigos" class="row g-1" style="max-height:200px;overflow-y:auto"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success" id="btnConfirmarIngreso">
+          <i class="bi bi-magic me-1"></i>Generar Códigos
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: Detalle de Unidades ═══════════════════ -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i>Unidades: <span id="detNombre"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="detCargando" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="mt-2 text-muted">Cargando unidades...</p>
+        </div>
+        <div id="detContenido" class="d-none">
+          <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+            <span class="fw-medium">Total: <span id="detTotal" class="badge bg-primary rounded-pill"></span> unidades</span>
+            <input type="text" id="detFiltro" class="form-control form-control-sm w-auto" placeholder="Filtrar por código...">
+          </div>
+          <div class="table-responsive" style="max-height:450px;overflow-y:auto">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>Código de Barras (16 dígitos)</th>
+                  <th style="width:200px">Vista Previa</th>
+                  <th style="width:100px">Estado</th>
+                  <th style="width:150px">Fecha Ingreso</th>
+                  <th style="width:80px" class="text-center">Eliminar</th>
+                </tr>
+              </thead>
+              <tbody id="detTablaBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="detVacio" class="d-none text-center py-5 text-muted">
+          <i class="bi bi-inbox fs-1"></i>
+          <p class="mt-2">Este producto no tiene unidades registradas aún.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1200">
   <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert" aria-atomic="true">
     <div class="d-flex">
       <div class="toast-body" id="toastTexto"></div>
@@ -214,192 +292,267 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script>
-// ── Renderizar barcodes ────────────────────────────────────────────────────────
-function renderBarcodes() {
-  document.querySelectorAll('.barcode-preview[data-value]').forEach(svg => {
-    try {
-      JsBarcode(svg, svg.dataset.value, {
-        format:      'CODE128',
-        width:       1,
-        height:      30,
-        displayValue: false,
-        margin:      2,
-      });
-    } catch(e) { console.warn('barcode error', e); }
-  });
-}
-document.addEventListener('DOMContentLoaded', renderBarcodes);
-
-// ── Toast helper ──────────────────────────────────────────────────────────────
 function mostrarToast(msg, tipo = 'success') {
   const el = document.getElementById('toastMsg');
   el.className = `toast align-items-center text-white border-0 bg-${tipo}`;
   document.getElementById('toastTexto').textContent = msg;
-  bootstrap.Toast.getOrCreateInstance(el, { delay: 3000 }).show();
+  bootstrap.Toast.getOrCreateInstance(el, { delay: 4000 }).show();
+}
+function renderBarcode(svg, value) {
+  try { JsBarcode(svg, value, { format:'CODE128', width:1.2, height:35, displayValue:false, margin:2 }); }
+  catch(e) { console.warn(e); }
 }
 
-// ── Copiar al portapapeles ────────────────────────────────────────────────────
-document.addEventListener('click', async e => {
-  const btn = e.target.closest('.btn-copiar');
-  if (!btn) return;
-  try {
-    await navigator.clipboard.writeText(btn.dataset.codigo);
-    const icon = btn.querySelector('i');
-    icon.className = 'bi bi-check2';
-    setTimeout(() => icon.className = 'bi bi-clipboard', 2000);
-  } catch {
-    mostrarToast('No se pudo copiar', 'danger');
-  }
+// ── Filtros tabla ─────────────────────────────────────────────────────────────
+function filtrarTabla() {
+  const texto  = document.getElementById('filtroTexto').value.toLowerCase();
+  const estado = document.getElementById('filtroEstado').value;
+  const cat    = document.getElementById('filtroCat').value;
+  let visible  = 0;
+  document.querySelectorAll('.fila-producto').forEach(f => {
+    const okT = !texto  || f.dataset.sku.includes(texto) || f.dataset.nombre.includes(texto) || f.dataset.cat.toLowerCase().includes(texto);
+    const okE = estado === 'todos' || f.dataset.estado === estado;
+    const okC = !cat   || f.dataset.cat === cat;
+    f.style.display = (okT && okE && okC) ? '' : 'none';
+    if (okT && okE && okC) visible++;
+  });
+  document.getElementById('contadorVisible').textContent = `${visible} producto${visible !== 1 ? 's' : ''}`;
+}
+['filtroTexto','filtroEstado','filtroCat'].forEach(id =>
+  document.getElementById(id).addEventListener('input', filtrarTabla));
+
+// ── Modal Ingreso: filtro categoría ───────────────────────────────────────────
+document.getElementById('ingCat').addEventListener('change', function() {
+  const catId = this.value;
+  document.querySelectorAll('#ingProducto option').forEach(opt => {
+    if (!opt.value) return;
+    opt.hidden = !!(catId && opt.dataset.cat !== catId);
+  });
+  document.getElementById('ingProducto').value = '';
+  resetInfoProducto();
 });
 
-// ── Generar código para UN producto ──────────────────────────────────────────
-document.addEventListener('click', async e => {
-  const btn = e.target.closest('.btn-generar');
-  if (!btn) return;
-  const pid = btn.dataset.pid;
+function resetInfoProducto() {
+  document.getElementById('ingInfoProducto').classList.add('d-none');
+  document.getElementById('ingPreviewBar').innerHTML = '<span class="text-muted fst-italic small">Seleccioná un producto...</span>';
+  document.getElementById('ingPreviewCodigos').textContent = '';
+  document.getElementById('ingResultado').classList.add('d-none');
+}
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
+document.getElementById('ingProducto').addEventListener('change', async function() {
+  document.getElementById('ingResultado').classList.add('d-none');
+  if (!this.value) { resetInfoProducto(); return; }
+  const opt = this.options[this.selectedIndex];
+  document.getElementById('ingNombre').textContent    = opt.text;
+  document.getElementById('ingProveedor').textContent = opt.dataset.sup;
+  document.getElementById('ingInfoProducto').classList.remove('d-none');
   try {
-    const res  = await fetch(`/inventario/producto/${pid}/generar-codbar`, { method: 'POST' });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al generar');
-
-    mostrarToast(`Código generado: ${data.internal_barcode}`);
-
-    // Actualizar la fila sin recargar
-    const fila = btn.closest('tr');
-
-    // Columna código
-    const tdCod = fila.querySelector('td:nth-child(5)');
-    tdCod.innerHTML = `
-      <div class="d-flex align-items-center gap-1">
-        <code class="text-success fw-bold fs-6 letra-codigo" id="cod-${pid}">
-          ${data.internal_barcode}
-        </code>
-        <button class="btn btn-sm btn-outline-secondary p-1 btn-copiar"
-                data-codigo="${data.internal_barcode}" title="Copiar">
-          <i class="bi bi-clipboard" style="font-size:0.75rem"></i>
-        </button>
-      </div>`;
-
-    // Columna preview
-    const tdBar = fila.querySelector('td.d-none');
-    if (tdBar) {
-      tdBar.innerHTML = `<svg class="barcode-preview" data-value="${data.internal_barcode}"></svg>`;
-      const svg = tdBar.querySelector('svg');
-      JsBarcode(svg, data.internal_barcode, {
-        format:'CODE128', width:1, height:30, displayValue:false, margin:2
-      });
-    }
-
-    // Botón → regenerar + etiqueta
-    btn.className = 'btn btn-sm btn-outline-warning btn-generar';
-    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
-    btn.disabled  = false;
-    btn.title     = 'Regenerar código';
-
-    // Agregar botón etiqueta si no existe
-    if (!fila.querySelector('a.btn-outline-primary')) {
-      const wrap = btn.closest('.d-flex');
-      const a    = document.createElement('a');
-      a.href      = `/inventario/producto/${pid}/etiqueta`;
-      a.target    = '_blank';
-      a.className = 'btn btn-sm btn-outline-primary';
-      a.title     = 'Imprimir etiqueta';
-      a.innerHTML = '<i class="bi bi-tag"></i>';
-      wrap.appendChild(a);
-    }
-
-    // Actualizar datos del filtro
-    fila.dataset.cod    = data.internal_barcode.toLowerCase();
-    fila.dataset.estado = 'con';
-
-    actualizarEstadisticas();
-
-  } catch(err) {
-    mostrarToast(err.message, 'danger');
-    btn.disabled  = false;
-    btn.innerHTML = '<i class="bi bi-plus-circle"></i>';
-  }
+    const r    = await fetch(`/inventario/api/producto/${this.value}/unidades`);
+    const data = await r.json();
+    document.getElementById('ingUnidadesActuales').textContent = data.units.length;
+  } catch { document.getElementById('ingUnidadesActuales').textContent = '?'; }
+  actualizarPreview();
 });
 
-// ── Generar TODOS los faltantes ───────────────────────────────────────────────
-document.getElementById('btnGenerarTodos').addEventListener('click', async () => {
-  const btn = document.getElementById('btnGenerarTodos');
+document.getElementById('ingCantidad').addEventListener('input', actualizarPreview);
+
+function actualizarPreview() {
+  const qty = parseInt(document.getElementById('ingCantidad').value) || 0;
+  const pid = document.getElementById('ingProducto').value;
+  if (!pid || qty <= 0) return;
+  const ejemplo = String(pid).padStart(4,'0');
+  const fake    = ('0'.repeat(16) + ejemplo + '000001').slice(-16);
+  document.getElementById('ingPreviewBar').innerHTML = '<svg id="svgPreview"></svg><div class="small text-muted mt-1">Ejemplo del formato generado</div>';
+  const svgEl = document.getElementById('svgPreview');
+  if (svgEl) renderBarcode(svgEl, fake);
+  document.getElementById('ingPreviewCodigos').textContent =
+    qty === 1 ? '1 código único de 16 dígitos' : `${qty} códigos únicos y consecutivos de 16 dígitos`;
+}
+
+// Botón rápido "+" en la tabla
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-quick-add');
+  if (!btn) return;
+  document.getElementById('ingProducto').value = btn.dataset.pid;
+  document.getElementById('ingProducto').dispatchEvent(new Event('change'));
+  document.getElementById('ingCantidad').value = 1;
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalIngreso')).show();
+});
+
+// Confirmar ingreso
+document.getElementById('btnConfirmarIngreso').addEventListener('click', async () => {
+  const pid = document.getElementById('ingProducto').value;
+  const qty = parseInt(document.getElementById('ingCantidad').value) || 0;
+  if (!pid) { mostrarToast('Seleccioná un producto', 'warning'); return; }
+  if (qty < 1 || qty > 500) { mostrarToast('Cantidad entre 1 y 500', 'warning'); return; }
+
+  const btn = document.getElementById('btnConfirmarIngreso');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Generando...';
 
   try {
-    const res  = await fetch('/inventario/generar-todos-codbar', { method: 'POST' });
+    const res  = await fetch('/inventario/recibir-unidades', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ product_id: pid, quantity: qty }),
+    });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error');
 
-    mostrarToast(`${data.generados} códigos generados correctamente`);
+    document.getElementById('ingResultadoMsg').textContent =
+      `✅ ${data.quantity} código${data.quantity > 1 ? 's' : ''} generado${data.quantity > 1 ? 's' : ''} para "${data.product}"`;
 
-    // Recargar para actualizar la tabla completa
-    setTimeout(() => location.reload(), 1500);
+    const lista = document.getElementById('ingListaCodigos');
+    lista.innerHTML = '';
+    data.barcodes.forEach(cod => {
+      const col = document.createElement('div');
+      col.className = 'col-6 col-md-4 col-lg-3';
+      col.innerHTML = `<div class="border rounded p-1 text-center small bg-white">
+        <svg class="bc-gen" data-v="${cod}"></svg>
+        <div class="font-monospace text-success fw-bold" style="font-size:0.65rem">${cod}</div></div>`;
+      lista.appendChild(col);
+    });
+    document.getElementById('ingResultado').classList.remove('d-none');
+    lista.querySelectorAll('.bc-gen').forEach(svg => renderBarcode(svg, svg.dataset.v));
+
+    // Actualizar fila en tabla
+    const fila = document.querySelector(`.fila-producto[data-pid="${pid}"]`);
+    if (fila) {
+      const tdU = fila.querySelector('td:nth-child(5)');
+      const tdF = fila.querySelector('td:nth-child(6)');
+      const bdg = tdU.querySelector('.badge');
+      const actual = parseInt(bdg?.textContent || '0');
+      tdU.innerHTML = `<span class="badge bg-success rounded-pill fs-6">${actual + qty}</span>`;
+      const ahora = new Date();
+      tdF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+      fila.dataset.estado = 'con';
+    }
+    mostrarToast(`${qty} código${qty>1?'s':''} generado${qty>1?'s':''} para ${data.product}`);
 
   } catch(err) {
     mostrarToast(err.message, 'danger');
-    btn.disabled  = false;
-    btn.innerHTML = '<i class="bi bi-magic me-1"></i>Generar Todos los Faltantes';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic me-1"></i>Generar Códigos';
   }
 });
 
-// ── Filtros de tabla ──────────────────────────────────────────────────────────
-function filtrarTabla() {
-  const texto  = document.getElementById('filtroTexto').value.toLowerCase();
-  const estado = document.getElementById('filtroEstado').value;
-  const cat    = document.getElementById('filtroCategoria').value;
-  const filas  = document.querySelectorAll('.fila-producto');
-  let visible  = 0;
+document.getElementById('modalIngreso').addEventListener('hidden.bs.modal', () => {
+  document.getElementById('ingProducto').value = '';
+  document.getElementById('ingCantidad').value = 1;
+  resetInfoProducto();
+});
 
-  filas.forEach(f => {
-    const okTexto  = !texto  || f.dataset.sku.includes(texto) ||
-                                f.dataset.nombre.includes(texto) ||
-                                f.dataset.cod.includes(texto);
-    const okEstado = estado === 'todos' || f.dataset.estado === estado;
-    const okCat    = !cat   || f.dataset.cat === cat;
+// ── Modal Detalle ─────────────────────────────────────────────────────────────
+let currentDetallePid = null;
 
-    const show = okTexto && okEstado && okCat;
-    f.style.display = show ? '' : 'none';
-    if (show) visible++;
-  });
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-ver-unidades');
+  if (!btn) return;
+  currentDetallePid = btn.dataset.pid;
+  document.getElementById('detNombre').textContent = btn.dataset.nombre;
+  document.getElementById('detCargando').classList.remove('d-none');
+  document.getElementById('detContenido').classList.add('d-none');
+  document.getElementById('detVacio').classList.add('d-none');
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalle')).show();
+  await cargarDetalle(currentDetallePid);
+});
 
-  document.getElementById('contadorVisible').textContent = `${visible} producto${visible !== 1 ? 's' : ''}`;
+async function cargarDetalle(pid) {
+  try {
+    const res   = await fetch(`/inventario/api/producto/${pid}/unidades`);
+    const data  = await res.json();
+    const units = data.units || [];
+    document.getElementById('detCargando').classList.add('d-none');
+    if (units.length === 0) { document.getElementById('detVacio').classList.remove('d-none'); return; }
+
+    document.getElementById('detTotal').textContent = units.length;
+    const tbody = document.getElementById('detTablaBody');
+    tbody.innerHTML = '';
+    units.forEach((u, i) => {
+      const tr = document.createElement('tr');
+      tr.dataset.uid     = u.id;
+      tr.dataset.barcode = u.barcode;
+      tr.innerHTML = `
+        <td class="text-muted small">${i+1}</td>
+        <td>
+          <code class="text-success fw-bold font-monospace">${u.barcode}</code>
+          <button class="btn btn-sm btn-link p-0 ms-1 btn-copiar-unit" data-cod="${u.barcode}" title="Copiar">
+            <i class="bi bi-clipboard" style="font-size:0.75rem"></i>
+          </button>
+        </td>
+        <td><svg class="bc-det" data-v="${u.barcode}"></svg></td>
+        <td><span class="badge bg-${u.status==='disponible'?'success':'secondary'}">${u.status}</span></td>
+        <td class="small text-muted">${u.received_at}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-danger btn-borrar-unit" data-uid="${u.id}" title="Eliminar">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.bc-det').forEach(svg => renderBarcode(svg, svg.dataset.v));
+    document.getElementById('detContenido').classList.remove('d-none');
+  } catch(err) {
+    document.getElementById('detCargando').classList.add('d-none');
+    mostrarToast('Error al cargar unidades', 'danger');
+  }
 }
 
-['filtroTexto','filtroEstado','filtroCategoria'].forEach(id =>
-  document.getElementById(id).addEventListener('input', filtrarTabla)
-);
+document.getElementById('detFiltro').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#detTablaBody tr').forEach(tr => {
+    tr.style.display = !q || tr.dataset.barcode?.includes(q) ? '' : 'none';
+  });
+});
 
-// ── Actualizar estadísticas en vivo ───────────────────────────────────────────
-function actualizarEstadisticas() {
-  const total  = document.querySelectorAll('.fila-producto').length;
-  const con    = document.querySelectorAll('.fila-producto[data-estado="con"]').length;
-  const sin    = total - con;
-  const pct    = total > 0 ? Math.round((con / total) * 100) : 0;
-
-  // Actualizar tarjetas (índice 0=total,1=con,2=sin,3=pct)
-  const cards = document.querySelectorAll('.card.border-0.shadow-sm.text-center .fs-1');
-  if (cards.length >= 4) {
-    cards[0].textContent = total;
-    cards[1].textContent = con;
-    cards[2].textContent = sin;
-    cards[3].textContent = pct + '%';
+document.addEventListener('click', async e => {
+  const btnCopy = e.target.closest('.btn-copiar-unit');
+  if (btnCopy) {
+    try {
+      await navigator.clipboard.writeText(btnCopy.dataset.cod);
+      btnCopy.innerHTML = '<i class="bi bi-check2" style="font-size:0.75rem"></i>';
+      setTimeout(() => btnCopy.innerHTML = '<i class="bi bi-clipboard" style="font-size:0.75rem"></i>', 2000);
+    } catch { mostrarToast('No se pudo copiar', 'danger'); }
+    return;
   }
 
-  // Progreso
-  const bar = document.querySelector('.progress-bar');
-  if (bar) bar.style.width = pct + '%';
+  const btnDel = e.target.closest('.btn-borrar-unit');
+  if (!btnDel) return;
+  if (!confirm('¿Eliminar esta unidad? Esta acción no se puede deshacer.')) return;
 
-  // Botón "Generar Todos"
-  const btnTodos = document.getElementById('btnGenerarTodos');
-  btnTodos.disabled = sin === 0;
-  const badge = btnTodos.querySelector('.badge');
-  if (badge) badge.textContent = sin;
-}
+  const uid = btnDel.dataset.uid;
+  btnDel.disabled = true;
+  btnDel.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+  try {
+    const res = await fetch(`/inventario/unidad/${uid}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Error al eliminar');
+
+    btnDel.closest('tr').remove();
+    const rows = document.querySelectorAll('#detTablaBody tr').length;
+    document.getElementById('detTotal').textContent = rows;
+
+    if (currentDetallePid) {
+      const filaTabla = document.querySelector(`.fila-producto[data-pid="${currentDetallePid}"]`);
+      if (filaTabla) {
+        const bdg = filaTabla.querySelector('.badge');
+        if (bdg) {
+          const nuevo = Math.max(0, parseInt(bdg.textContent) - 1);
+          bdg.textContent = nuevo;
+          if (nuevo === 0) { bdg.className = 'badge bg-danger rounded-pill fs-6'; filaTabla.dataset.estado = 'sin'; }
+        }
+      }
+    }
+    mostrarToast('Unidad eliminada');
+    if (rows === 0) {
+      document.getElementById('detContenido').classList.add('d-none');
+      document.getElementById('detVacio').classList.remove('d-none');
+    }
+  } catch(err) {
+    mostrarToast('No se pudo eliminar', 'danger');
+    btnDel.disabled = false;
+    btnDel.innerHTML = '<i class="bi bi-trash"></i>';
+  }
+});
 </script>
 {% endblock %}
