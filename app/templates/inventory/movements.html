@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Movimientos de Stock{% endblock %}
+{% block content %}
+
+<div class="page-header mb-1">
+  <div>
+    <h1 class="page-title"><i class="bi bi-clock-history text-accent"></i> Movimientos de Stock</h1>
+    <div class="page-subtitle">Historial completo de entradas, salidas y ajustes</div>
+  </div>
+  <a href="{{ url_for('inventory.stock_count') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-clipboard-check me-1"></i>Hacer Recuento
+  </a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <select name="product" class="form-select form-select-sm">
+          <option value="">Todos los productos</option>
+          {% for p in products %}
+          <option value="{{ p.id }}" {% if selected_pid == p.id %}selected{% endif %}>{{ p.sku }} — {{ p.name[:40] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="type" class="form-select form-select-sm">
+          <option value="">Todos los tipos</option>
+          <option value="sale"       {% if selected_type=='sale' %}selected{% endif %}>Venta</option>
+          <option value="adjustment" {% if selected_type=='adjustment' %}selected{% endif %}>Ajuste manual</option>
+          <option value="reception"  {% if selected_type=='reception' %}selected{% endif %}>Recepción</option>
+          <option value="count"      {% if selected_type=='count' %}selected{% endif %}>Conteo físico</option>
+          <option value="correction" {% if selected_type=='correction' %}selected{% endif %}>Corrección</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100">Filtrar</button>
+      </div>
+      <div class="col-md-1">
+        <a href="{{ url_for('inventory.movements') }}" class="btn btn-outline-secondary btn-sm w-100"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if movements.items %}
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:13px;">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th class="text-center">Antes</th>
+            <th class="text-center">Cambio</th>
+            <th class="text-center">Después</th>
+            <th>Motivo</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movements.items %}
+          {% set lbl = m.label %}
+          <tr>
+            <td class="text-muted" style="white-space:nowrap;">
+              {{ m.created_at.strftime('%d/%m/%Y') }}<br>
+              <small>{{ m.created_at.strftime('%H:%M') }}</small>
+            </td>
+            <td>
+              <a href="{{ url_for('inventory.product_detail', pid=m.product_id) }}" class="fw-600 text-accent">
+                {{ m.product.name[:35] if m.product else '—' }}
+              </a>
+              <div style="font-size:11px;color:#aaa;"><code>{{ m.product.sku if m.product else '' }}</code></div>
+            </td>
+            <td>
+              <span style="font-size:12px;font-weight:600;" class="{{ lbl[2] }}">
+                <i class="bi {{ lbl[1] }} me-1"></i>{{ lbl[0] }}
+              </span>
+            </td>
+            <td class="text-center fw-600">{{ m.qty_before }}</td>
+            <td class="text-center fw-700" style="color:{{ '#16a34a' if m.qty_change > 0 else ('#dc2626' if m.qty_change < 0 else '#8a94a6') }}">
+              {{ '%+d' % m.qty_change }}
+            </td>
+            <td class="text-center fw-700">{{ m.qty_after }}</td>
+            <td style="font-size:12px;color:#555;">{{ m.reason or '—' }}</td>
+            <td style="font-size:12px;">{{ m.user.name if m.user else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if movements.pages > 1 %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% for p in movements.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+            <li class="page-item {% if p == movements.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('inventory.movements', page=p, product=selected_pid or '', type=selected_type or '') }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state py-5">
+      <i class="bi bi-clock-history"></i>
+      <p>No hay movimientos registrados todavía.</p>
+      <a href="{{ url_for('inventory.stock_count') }}" class="btn btn-primary btn-sm">Hacer primer recuento</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

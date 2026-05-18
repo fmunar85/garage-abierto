@@ -5,5 +5,6 @@ from app.models.customer import Customer
 from app.models.employee import Employee
 from app.models.sale import Sale, SaleItem
 from app.models.promotion import BankPromotion
+from app.models.stock_movement import StockMovement
 
-__all__ = ['User', 'Product', 'Category', 'Supplier', 'Customer', 'Employee', 'Sale', 'SaleItem', 'BankPromotion']
+__all__ = ['User', 'Product', 'Category', 'Supplier', 'Customer', 'Employee', 'Sale', 'SaleItem', 'BankPromotion', 'StockMovement']

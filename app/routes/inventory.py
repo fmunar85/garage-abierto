@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user
 from app import db
 from app.models.product import Product, Category
 from app.models.supplier import Supplier
+from app.models.stock_movement import StockMovement
 from app.utils import admin_required
 from werkzeug.utils import secure_filename
+from datetime import datetime, timezone
 import os
 import uuid
 
@@ -158,8 +160,13 @@ def edit_product(pid):
 @login_required
 def adjust_stock(pid):
     product = Product.query.get_or_404(pid)
-    amount = int(request.form.get('amount', 0))
+    amount    = int(request.form.get('amount', 0))
     operation = request.form.get('operation', 'add')
+    mov_type  = request.form.get('mov_type', 'adjustment')
+    reason    = request.form.get('reason', '').strip() or None
+
+    qty_before = product.stock
+
     if operation == 'add':
         product.stock += amount
         flash(f'Se agregaron {amount} unidades. Stock actual: {product.stock}', 'success')
@@ -172,8 +179,109 @@ def adjust_stock(pid):
     elif operation == 'set':
         product.stock = amount
         flash(f'Stock ajustado a {amount} unidades.', 'success')
+
+    qty_change = product.stock - qty_before
+    mov = StockMovement(
+        product_id=pid,
+        user_id=current_user.id,
+        type=mov_type,
+        qty_before=qty_before,
+        qty_change=qty_change,
+        qty_after=product.stock,
+        reason=reason,
+    )
+    db.session.add(mov)
     db.session.commit()
     return redirect(url_for('inventory.product_detail', pid=pid))
+
+
+@inventory_bp.route('/recuento')
+@login_required
+@admin_required
+def stock_count():
+    """Página de conteo físico de inventario."""
+    cat_id = request.args.get('cat', type=int)
+    query = Product.query.filter_by(active=True)
+    if cat_id:
+        query = query.filter_by(category_id=cat_id)
+    products = query.order_by(Product.category_id, Product.name).all()
+    categories = Category.query.order_by(Category.name).all()
+    return render_template('inventory/stock_count.html',
+                           products=products,
+                           categories=categories,
+                           selected_cat=cat_id,
+                           now=datetime.now(timezone.utc))
+
+
+@inventory_bp.route('/recuento/aplicar', methods=['POST'])
+@login_required
+@admin_required
+def apply_stock_count():
+    """Aplica los ajustes del conteo físico."""
+    data = request.form
+    ajustados = 0
+    sin_cambio = 0
+    razon_global = data.get('reason_global', 'Conteo físico de inventario').strip()
+
+    for key, val in data.items():
+        if key.startswith('count_'):
+            pid = int(key.split('_')[1])
+            try:
+                new_qty = int(val)
+            except (ValueError, TypeError):
+                continue
+            product = Product.query.get(pid)
+            if product is None:
+                continue
+            if product.stock == new_qty:
+                sin_cambio += 1
+                continue
+            qty_before = product.stock
+            product.stock = new_qty
+            mov = StockMovement(
+                product_id=pid,
+                user_id=current_user.id,
+                type='count',
+                qty_before=qty_before,
+                qty_change=new_qty - qty_before,
+                qty_after=new_qty,
+                reason=razon_global,
+            )
+            db.session.add(mov)
+            ajustados += 1
+
+    db.session.commit()
+    flash(f'✅ Conteo aplicado: {ajustados} producto{"s" if ajustados != 1 else ""} ajustado{"s" if ajustados != 1 else ""}. {sin_cambio} sin cambios.', 'success')
+    return redirect(url_for('inventory.stock_count'))
+
+
+@inventory_bp.route('/movimientos')
+@login_required
+def movements():
+    """Historial global de movimientos de stock."""
+    page   = request.args.get('page', 1, type=int)
+    pid    = request.args.get('product', type=int)
+    mtype  = request.args.get('type', '')
+    q      = StockMovement.query.join(Product)
+    if pid:
+        q = q.filter(StockMovement.product_id == pid)
+    if mtype:
+        q = q.filter(StockMovement.type == mtype)
+    movements = q.order_by(StockMovement.created_at.desc()).paginate(page=page, per_page=30, error_out=False)
+    products  = Product.query.order_by(Product.name).all()
+    return render_template('inventory/movements.html',
+                           movements=movements,
+                           products=products,
+                           selected_pid=pid,
+                           selected_type=mtype)
+
+
+@inventory_bp.route('/producto/<int:pid>/etiqueta')
+@login_required
+def product_label(pid):
+    """Página de etiqueta con código de barras + QR para imprimir."""
+    product = Product.query.get_or_404(pid)
+    return render_template('inventory/label.html', product=product)
 
 
 @inventory_bp.route('/producto/<int:pid>/eliminar', methods=['POST'])

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Recuento de Inventario{% endblock %}
+{% block extra_css %}
+<style>
+  .count-table td, .count-table th { vertical-align: middle; }
+  .count-input { width: 90px; text-align: center; font-weight: 700; font-size: 15px; }
+  .diff-cell { font-weight: 700; font-size: 14px; }
+  .diff-pos { color: #16a34a; }
+  .diff-neg { color: #dc2626; }
+  .diff-zero { color: #8a94a6; }
+  .stock-system { font-size: 14px; font-weight: 600; color: #1a2035; }
+  .cat-header { background: linear-gradient(90deg,#f0f4ff,#f8f9fb); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #2563eb; }
+  .sticky-footer { position: sticky; bottom: 0; background: #fff; border-top: 2px solid #eef0f4; padding: 14px 0; z-index: 10; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-1">
+  <div>
+    <h1 class="page-title"><i class="bi bi-clipboard-check text-accent"></i> Recuento de Inventario</h1>
+    <div class="page-subtitle">Ingresá la cantidad física de cada producto para detectar y corregir diferencias</div>
+  </div>
+  <a href="{{ url_for('inventory.movements') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-clock-history me-1"></i>Ver historial
+  </a>
+</div>
+
+<!-- Filtro por categoría -->
+<form method="GET" class="d-flex gap-2 mb-3 align-items-center">
+  <select name="cat" class="form-select" style="max-width:260px;" onchange="this.form.submit()">
+    <option value="">Todas las categorías</option>
+    {% for cat in categories %}
+    <option value="{{ cat.id }}" {% if selected_cat == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <span class="text-muted" style="font-size:13px;">{{ products|length }} productos</span>
+</form>
+
+<form method="POST" action="{{ url_for('inventory.apply_stock_count') }}" id="countForm">
+
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label fw-600 mb-1" style="font-size:13px;">Motivo / Nota del conteo</label>
+          <input type="text" name="reason_global" class="form-control"
+                 placeholder="Ej: Conteo mensual Mayo 2026, Inventario anual…"
+                 value="Conteo físico {{ now.strftime('%d/%m/%Y') if now else '' }}">
+        </div>
+        <div class="col-md-4">
+          <div class="alert alert-info py-2 mb-0" style="font-size:12px;">
+            <i class="bi bi-info-circle me-1"></i>
+            Dejá en blanco los productos que <strong>no contás</strong> — solo se ajustan los que modificás.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-5">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table count-table mb-0">
+          <thead>
+            <tr>
+              <th style="width:60px;">#</th>
+              <th>Producto</th>
+              <th class="text-center" style="width:100px;">Stock Sistema</th>
+              <th class="text-center" style="width:120px;">Conteo Físico</th>
+              <th class="text-center" style="width:100px;">Diferencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set current_cat = namespace(id=None) %}
+            {% for p in products %}
+              {% if p.category_id != current_cat.id %}
+                {% set current_cat.id = p.category_id %}
+                <tr class="cat-header">
+                  <td colspan="5" class="px-3 py-2">
+                    <i class="bi {{ p.category_obj.icon if p.category_obj else 'bi-box' }} me-2"></i>
+                    {{ p.category_obj.name if p.category_obj else 'Sin categoría' }}
+                  </td>
+                </tr>
+              {% endif %}
+            <tr>
+              <td class="text-muted" style="font-size:11px;"><code>{{ p.sku }}</code></td>
+              <td>
+                <div class="fw-600" style="font-size:13px;">{{ p.name }}</div>
+                <div style="font-size:11px;color:#aaa;">{{ p.brand or '' }}</div>
+              </td>
+              <td class="text-center">
+                <span class="badge px-3 py-2 {{ 'badge-stock-out' if p.stock == 0 else ('badge-stock-low' if p.low_stock else 'badge-stock-ok') }}">
+                  {{ p.stock }}
+                </span>
+              </td>
+              <td class="text-center">
+                <input type="number" name="count_{{ p.id }}"
+                       class="form-control count-input mx-auto"
+                       placeholder="{{ p.stock }}"
+                       min="0"
+                       data-system="{{ p.stock }}"
+                       oninput="updateDiff(this, {{ p.id }})">
+              </td>
+              <td class="text-center diff-cell diff-zero" id="diff_{{ p.id }}">—</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky submit bar -->
+  <div class="sticky-footer">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span id="changesCount" class="fw-700 text-accent" style="font-size:16px;">0</span>
+          <span class="text-muted ms-1" style="font-size:14px;">diferencias detectadas</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary" onclick="resetAll()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+            <i class="bi bi-check-circle me-1"></i>Aplicar Ajustes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let changes = 0;
+
+function updateDiff(input, pid) {
+  const system = parseInt(input.dataset.system) || 0;
+  const val = input.value.trim();
+  const cell = document.getElementById('diff_' + pid);
+
+  if (val === '') {
+    cell.textContent = '—';
+    cell.className = 'text-center diff-cell diff-zero';
+    recalcChanges();
+    return;
+  }
+
+  const counted = parseInt(val);
+  if (isNaN(counted)) return;
+
+  const diff = counted - system;
+  if (diff > 0) {
+    cell.textContent = '+' + diff;
+    cell.className = 'text-center diff-cell diff-pos';
+  } else if (diff < 0) {
+    cell.textContent = diff;
+    cell.className = 'text-center diff-cell diff-neg';
+  } else {
+    cell.textContent = '✓ 0';
+    cell.className = 'text-center diff-cell diff-zero';
+  }
+  recalcChanges();
+}
+
+function recalcChanges() {
+  const inputs = document.querySelectorAll('[name^="count_"]');
+  let n = 0;
+  inputs.forEach(inp => {
+    if (inp.value.trim() !== '' && parseInt(inp.value) !== parseInt(inp.dataset.system)) n++;
+  });
+  changes = n;
+  document.getElementById('changesCount').textContent = n;
+  document.getElementById('submitBtn').disabled = n === 0;
+}
+
+function resetAll() {
+  document.querySelectorAll('[name^="count_"]').forEach(inp => {
+    inp.value = '';
+    const pid = inp.name.split('_')[1];
+    const cell = document.getElementById('diff_' + pid);
+    cell.textContent = '—';
+    cell.className = 'text-center diff-cell diff-zero';
+  });
+  document.getElementById('changesCount').textContent = '0';
+  document.getElementById('submitBtn').disabled = true;
+}
+</script>
+{% endblock %}

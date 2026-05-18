@@ -15,6 +15,9 @@
     {{ product.name }}
   </h1>
   <div class="d-flex gap-2">
+    <a href="{{ url_for('inventory.product_label', pid=product.id) }}" class="btn btn-outline-secondary btn-sm" title="Etiqueta / Código de barras">
+      <i class="bi bi-upc-scan"></i> Etiqueta
+    </a>
     <a href="{{ url_for('inventory.edit_product', pid=product.id) }}" class="btn btn-outline-primary btn-sm">
       <i class="bi bi-pencil"></i> Editar
     </a>
@@ -140,22 +143,69 @@
       <div class="card-header"><i class="bi bi-sliders text-accent"></i> Ajustar Stock</div>
       <div class="card-body">
         <form method="POST" action="{{ url_for('inventory.adjust_stock', pid=product.id) }}">
-          <div class="mb-3">
-            <label class="form-label">Operación</label>
-            <select name="operation" class="form-select">
-              <option value="add">Agregar unidades</option>
-              <option value="subtract">Retirar unidades</option>
-              <option value="set">Establecer cantidad exacta</option>
+          <div class="mb-2">
+            <label class="form-label fw-600" style="font-size:13px;">Tipo de movimiento</label>
+            <select name="mov_type" class="form-select form-select-sm">
+              <option value="adjustment">Ajuste manual</option>
+              <option value="reception">Recepción de mercadería</option>
+              <option value="correction">Corrección de error</option>
+              <option value="count">Conteo físico</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Cantidad</label>
-            <input type="number" name="amount" class="form-control" min="0" value="1" required>
+          <div class="mb-2">
+            <label class="form-label fw-600" style="font-size:13px;">Operación</label>
+            <select name="operation" class="form-select form-select-sm">
+              <option value="add">➕ Agregar unidades</option>
+              <option value="subtract">➖ Retirar unidades</option>
+              <option value="set">📌 Establecer cantidad exacta</option>
+            </select>
           </div>
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-check-lg"></i> Aplicar Ajuste
+          <div class="mb-2">
+            <label class="form-label fw-600" style="font-size:13px;">Cantidad</label>
+            <input type="number" name="amount" class="form-control form-control-sm" min="0" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-600" style="font-size:13px;">Motivo (opcional)</label>
+            <input type="text" name="reason" class="form-control form-control-sm"
+                   placeholder="Ej: Llegó pedido proveedor, rotura, etc.">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-sm">
+            <i class="bi bi-check-lg me-1"></i> Aplicar Ajuste
           </button>
         </form>
+      </div>
+    </div>
+
+    <!-- Historial de movimientos -->
+    <div class="card mt-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history text-accent"></i> Historial de Stock</span>
+        <a href="{{ url_for('inventory.movements', product=product.id) }}" class="btn btn-sm btn-outline-secondary" style="font-size:11px;">Ver todo</a>
+      </div>
+      <div class="card-body p-0">
+        {% set movs = product.movements.limit(8).all() %}
+        {% if movs %}
+        <table class="table table-sm mb-0" style="font-size:12px;">
+          <tbody>
+            {% for m in movs %}
+            {% set lbl = m.label %}
+            <tr>
+              <td class="text-muted" style="white-space:nowrap;width:80px;">{{ m.created_at.strftime('%d/%m %H:%M') }}</td>
+              <td>
+                <span class="{{ lbl[2] }} fw-600"><i class="bi {{ lbl[1] }}"></i></span>
+                <span class="text-muted ms-1">{{ lbl[0] }}</span>
+                {% if m.reason %}<div style="font-size:10px;color:#aaa;">{{ m.reason[:40] }}</div>{% endif %}
+              </td>
+              <td class="text-end fw-700" style="color:{{ '#16a34a' if m.qty_change > 0 else ('#dc2626' if m.qty_change < 0 else '#aaa') }};white-space:nowrap;">
+                {{ '%+d' % m.qty_change }} → {{ m.qty_after }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-3 text-muted" style="font-size:13px;">Sin movimientos registrados</div>
+        {% endif %}
       </div>
     </div>
   </div>

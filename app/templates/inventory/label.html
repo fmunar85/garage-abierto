@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Etiqueta — {{ product.sku }}{% endblock %}
+{% block extra_css %}
+<style>
+  .label-container {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .label-card {
+    background: #fff;
+    border: 2px solid #1a2035;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    font-family: 'Inter', monospace;
+  }
+  .label-brand {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #8a94a6;
+    margin-bottom: 2px;
+  }
+  .label-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1a2035;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .label-sku {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    font-family: monospace;
+    margin-bottom: 12px;
+  }
+  .label-price {
+    font-size: 28px;
+    font-weight: 900;
+    color: #1a2035;
+    margin: 8px 0;
+  }
+  .label-divider {
+    border: none;
+    border-top: 1px dashed #ddd;
+    margin: 12px 0;
+  }
+  #barcode-svg svg {
+    max-width: 100%;
+    height: auto;
+  }
+  #qr-canvas {
+    margin: 0 auto;
+    display: block;
+  }
+  .codes-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 12px;
+  }
+  .codes-col {
+    flex: 1;
+    text-align: center;
+  }
+  .codes-col label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a94a6;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff !important; }
+    .main-content { padding: 0 !important; }
+    .topbar, .sidebar, .page-header, nav.breadcrumb, .breadcrumb { display: none !important; }
+    .label-card { border: 2px solid #000; border-radius: 0; box-shadow: none; }
+    .wrapper { display: block; }
+    .main-content { margin: 0; }
+    #print-actions { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-1 no-print">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('inventory.index') }}">Inventario</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('inventory.product_detail', pid=product.id) }}">{{ product.name[:40] }}</a></li>
+    <li class="breadcrumb-item active">Etiqueta</li>
+  </ol>
+</nav>
+
+<div class="page-header no-print">
+  <h1 class="page-title"><i class="bi bi-upc-scan text-accent"></i> Etiqueta del Producto</h1>
+  <div class="d-flex gap-2" id="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="bi bi-printer me-1"></i>Imprimir / Guardar PDF
+    </button>
+    <a href="{{ url_for('inventory.product_detail', pid=product.id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+  </div>
+</div>
+
+<div class="label-container">
+
+  <!-- Label card -->
+  <div class="label-card" id="label-card">
+    <div class="label-brand">{{ product.brand or 'Garage Abierto' }}</div>
+    <div class="label-name">{{ product.name }}</div>
+    <div class="label-sku">{{ product.sku }}</div>
+
+    <div class="label-price">{{ product.price | currency }}</div>
+
+    {% if product.category_obj %}
+    <div style="font-size:11px;color:#8a94a6;margin-bottom:4px;">
+      <i class="bi {{ product.category_obj.icon }}"></i> {{ product.category_obj.name }}
+    </div>
+    {% endif %}
+
+    <hr class="label-divider">
+
+    <!-- Barcode + QR side by side -->
+    <div class="codes-row">
+      <div class="codes-col" style="flex:2;">
+        <label>Código de barras</label>
+        <div id="barcode-svg"></div>
+      </div>
+      <div class="codes-col">
+        <label>QR</label>
+        <canvas id="qr-canvas" width="80" height="80"></canvas>
+      </div>
+    </div>
+
+    <div style="font-size:9px;color:#ccc;margin-top:8px;">Garage Abierto — garageabierto.com</div>
+  </div>
+
+  <!-- Size selector & instructions -->
+  <div class="card mt-3 no-print">
+    <div class="card-body py-3">
+      <div class="fw-600 mb-2" style="font-size:13px;"><i class="bi bi-info-circle text-accent me-1"></i> Cómo usar</div>
+      <ul style="font-size:13px;color:#555;padding-left:18px;margin-bottom:0;">
+        <li>Escaneá el <strong>QR</strong> con la cámara del celular para abrir el producto directamente.</li>
+        <li>Usá el <strong>código de barras</strong> con un lector de pistola para ingresar ventas rápido.</li>
+        <li>Hacé clic en <strong>Imprimir / Guardar PDF</strong> para obtener la etiqueta en papel o PDF.</li>
+        <li>Recomendamos papel autoadhesivo 5×3 cm o carta cortado en etiquetas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Batch hint -->
+  <div class="card mt-2 no-print">
+    <div class="card-body py-2 d-flex gap-3 align-items-center">
+      <i class="bi bi-collection text-accent" style="font-size:20px;"></i>
+      <div style="font-size:13px;">
+        ¿Necesitás etiquetas de varios productos?
+        <a href="{{ url_for('inventory.index') }}" class="text-accent fw-600 ms-1">Ir al listado de productos →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- JsBarcode (Code128) -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<!-- QRCode.js -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<script>
+const sku  = "{{ product.sku }}";
+const productUrl = "{{ url_for('inventory.product_detail', pid=product.id, _external=True) }}";
+
+// ── Barcode ─────────────────────────────────────────────────────
+const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+svgEl.id = 'barcode';
+document.getElementById('barcode-svg').appendChild(svgEl);
+
+JsBarcode('#barcode', sku, {
+  format:       'CODE128',
+  width:        2,
+  height:       50,
+  displayValue: true,
+  fontOptions:  'bold',
+  fontSize:     12,
+  textMargin:   3,
+  margin:       4,
+});
+
+// ── QR Code ─────────────────────────────────────────────────────
+new QRCode(document.getElementById('qr-canvas'), {
+  text:          productUrl,
+  width:         80,
+  height:        80,
+  colorDark:     '#1a2035',
+  colorLight:    '#ffffff',
+  correctLevel:  QRCode.CorrectLevel.M,
+});
+</script>
+{% endblock %}

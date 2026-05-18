@@ -35,7 +35,7 @@
       </li>
 
       <li class="nav-section">Inventario</li>
-      <li class="{% if request.endpoint and request.endpoint.startswith('inventory.') and request.endpoint != 'inventory.categories' %}active{% endif %}">
+      <li class="{% if request.endpoint and request.endpoint.startswith('inventory.') and request.endpoint not in ('inventory.categories','inventory.stock_count','inventory.movements') %}active{% endif %}">
         <a href="{{ url_for('inventory.index') }}">
           <i class="bi bi-box-seam"></i><span>Productos</span>
         </a>
@@ -44,6 +44,16 @@
       <li class="{% if request.endpoint == 'inventory.categories' %}active{% endif %}">
         <a href="{{ url_for('inventory.categories') }}">
           <i class="bi bi-tags"></i><span>Categorías</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint in ('inventory.stock_count','inventory.apply_stock_count') %}active{% endif %}">
+        <a href="{{ url_for('inventory.stock_count') }}">
+          <i class="bi bi-clipboard-check"></i><span>Recuento Físico</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint == 'inventory.movements' %}active{% endif %}">
+        <a href="{{ url_for('inventory.movements') }}">
+          <i class="bi bi-clock-history"></i><span>Movimientos Stock</span>
         </a>
       </li>
       {% endif %}
