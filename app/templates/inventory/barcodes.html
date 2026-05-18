@@ -289,7 +289,7 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script>
 function mostrarToast(msg, tipo = 'success') {
@@ -555,4 +555,4 @@ document.addEventListener('click', async e => {
   }
 });
 </script>
-{% endblock %}
+{% endblock extra_js %}
