@@ -33,6 +33,7 @@ def create_app():
     from app.routes.suppliers import suppliers_bp
     from app.routes.customers import customers_bp
     from app.routes.employees import employees_bp
+    from app.routes.promotions import promotions_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -42,6 +43,7 @@ def create_app():
     app.register_blueprint(suppliers_bp, url_prefix='/proveedores')
     app.register_blueprint(customers_bp, url_prefix='/clientes')
     app.register_blueprint(employees_bp, url_prefix='/empleados')
+    app.register_blueprint(promotions_bp, url_prefix='/promociones')
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 

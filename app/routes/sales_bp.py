@@ -120,6 +120,13 @@ def cancel_sale(sid):
     return redirect(url_for('sales.sale_detail', sid=sid))
 
 
+@sales_bp.route('/<int:sid>/factura')
+@login_required
+def invoice(sid):
+    sale = Sale.query.get_or_404(sid)
+    return render_template('sales/invoice.html', sale=sale)
+
+
 @sales_bp.route('/buscar-productos')
 @login_required
 def search_products():

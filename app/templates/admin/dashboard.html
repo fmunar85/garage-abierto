@@ -1,6 +1,364 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+  .kpi-card {
+    border-radius: 14px; padding: 20px 22px;
+    display: flex; flex-direction: column; gap: 6px;
+    border: 1px solid #eef0f4; background: #fff; transition: box-shadow .2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #8a94a6; }
+  .kpi-value { font-size: 30px; font-weight: 800; line-height: 1; color: #1a2035; }
+  .kpi-value.sm { font-size: 22px; }
+  .kpi-sub   { font-size: 12px; color: #8a94a6; }
+  .kpi-delta { font-size: 12px; font-weight: 600; }
+  .kpi-delta.up   { color: #22c55e; }
+  .kpi-delta.down { color: #ef4444; }
+  .kpi-delta.neutral { color: #8a94a6; }
+  .kpi-icon { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:4px; }
+  .kpi-icon.blue   { background:#eff6ff; color:#2563eb; }
+  .kpi-icon.green  { background:#f0fdf4; color:#16a34a; }
+  .kpi-icon.amber  { background:#fffbeb; color:#d97706; }
+  .kpi-icon.red    { background:#fef2f2; color:#dc2626; }
+  .kpi-icon.purple { background:#faf5ff; color:#7c3aed; }
+  .kpi-icon.teal   { background:#f0fdfa; color:#0d9488; }
+  .stock-row { cursor:pointer; transition:background .15s; }
+  .stock-row:hover { background:#f8faff !important; }
+  .pay-chip { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:#f8f9fb;margin-bottom:8px; }
+  .pay-chip .pay-name { font-size:13px;font-weight:600;flex:1; }
+  .pay-chip .pay-amt  { font-size:13px;font-weight:700;color:#1a2035; }
+  .pay-chip .pay-cnt  { font-size:11px;color:#aaa; }
+  .promo-badge { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;margin:4px; }
+  .promo-badge.expiring { background:#fffbeb;color:#d97706;border-color:#fde68a; }
+</style>
+{% endblock %}
 {% block content %}
+
+<div class="page-header mb-0">
+  <div>
+    <h1 class="page-title"><i class="bi bi-speedometer2 text-accent"></i> Dashboard</h1>
+    <div class="page-subtitle">Vista ejecutiva — Garage Abierto</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('sales.new_sale') }}" class="btn btn-success btn-sm"><i class="bi bi-cart-plus me-1"></i>Nueva Venta</a>
+    <a href="{{ url_for('inventory.new_product') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Producto</a>
+  </div>
+</div>
+
+<!-- ROW 1 — KPIs -->
+<div class="row g-3 mt-1 mb-3">
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="bi bi-currency-dollar"></i></div>
+      <div class="kpi-label">Facturación Hoy</div>
+      <div class="kpi-value sm">{{ today_revenue | currency }}</div>
+      <div class="kpi-sub">{{ today_sales_count }} venta{{ 's' if today_sales_count != 1 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon green"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="kpi-label">Facturación del Mes</div>
+      <div class="kpi-value sm">{{ month_revenue | currency }}</div>
+      <div class="kpi-sub">
+        {% if month_delta_pct > 0 %}<span class="kpi-delta up"><i class="bi bi-arrow-up-short"></i>{{ month_delta_pct }}% vs mes ant.</span>
+        {% elif month_delta_pct < 0 %}<span class="kpi-delta down"><i class="bi bi-arrow-down-short"></i>{{ (month_delta_pct * -1) }}% vs mes ant.</span>
+        {% else %}<span class="kpi-delta neutral">Sin comparativo</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon teal"><i class="bi bi-receipt-cutoff"></i></div>
+      <div class="kpi-label">Ticket Promedio</div>
+      <div class="kpi-value sm">{{ avg_ticket | currency }}</div>
+      <div class="kpi-sub">promedio del mes</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon purple"><i class="bi bi-percent"></i></div>
+      <div class="kpi-label">Margen Bruto</div>
+      <div class="kpi-value">{{ gross_margin_pct }}%</div>
+      <div class="kpi-sub">{{ gross_profit | currency }} ganancia bruta</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card" style="cursor:pointer;" onclick="location.href='{{ url_for('inventory.index') }}?stock=low'">
+      <div class="kpi-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="kpi-label">Bajo Stock ↗</div>
+      <div class="kpi-value" style="color:{% if low_stock_count > 0 %}#dc2626{% else %}#22c55e{% endif %};">{{ low_stock_count }}</div>
+      <div class="kpi-sub">{{ out_of_stock_count }} sin stock · click para ver</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="bi bi-box-seam"></i></div>
+      <div class="kpi-label">Productos Activos</div>
+      <div class="kpi-value">{{ total_products }}</div>
+      <div class="kpi-sub">en catálogo</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon amber"><i class="bi bi-people"></i></div>
+      <div class="kpi-label">Clientes Activos</div>
+      <div class="kpi-value">{{ total_customers }}</div>
+      <div class="kpi-sub">en base de datos</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="kpi-card" style="cursor:pointer;" onclick="location.href='{{ url_for('promotions.index') }}'">
+      <div class="kpi-icon green"><i class="bi bi-bank"></i></div>
+      <div class="kpi-label">Promociones Vigentes ↗</div>
+      <div class="kpi-value" style="color:{% if active_promos %}#16a34a{% else %}#8a94a6{% endif %};">{{ active_promos|length }}</div>
+      <div class="kpi-sub">bancos con beneficios activos</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 2 — Gráfico 30 días + Métodos de pago -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bar-chart-line text-accent"></i> Ventas últimos 30 días</span>
+        <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver ventas</a>
+      </div>
+      <div class="card-body">
+        <canvas id="chartDaily" height="75"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-credit-card text-accent"></i> Medios de Pago (mes)</div>
+      <div class="card-body">
+        {% set total_pay = namespace(v=0) %}
+        {% for p in payment_data %}{% set total_pay.v = total_pay.v + (p.total | float) %}{% endfor %}
+        {% if payment_data %}
+          {% set pay_icons  = {'efectivo':'bi-cash-coin','tarjeta':'bi-credit-card','transferencia':'bi-bank','cuenta_corriente':'bi-journal-bookmark'} %}
+          {% set pay_colors = {'efectivo':'#22c55e','tarjeta':'#2563eb','transferencia':'#7c3aed','cuenta_corriente':'#f59e0b'} %}
+          {% for p in payment_data %}
+          {% set pct = ((p.total | float) / total_pay.v * 100) | round(0) if total_pay.v > 0 else 0 %}
+          <div class="pay-chip">
+            <i class="bi {{ pay_icons.get(p.payment_method, 'bi-cash') }}" style="color:{{ pay_colors.get(p.payment_method,'#888') }};font-size:18px;"></i>
+            <div class="flex-fill">
+              <div class="pay-name">{{ p.payment_method | capitalize }}</div>
+              <div style="background:#eef0f4;border-radius:4px;height:5px;margin-top:3px;">
+                <div style="width:{{ pct }}%;height:5px;border-radius:4px;background:{{ pay_colors.get(p.payment_method,'#888') }};"></div>
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="pay-amt">{{ pct }}%</div>
+              <div class="pay-cnt">{{ p.cnt }} vta{{ 's' if p.cnt != 1 }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state py-3"><i class="bi bi-credit-card"></i><p>Sin ventas este mes</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 3 — Top productos + 6 meses -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-trophy text-accent"></i> Top Productos del Mes</div>
+      <div class="card-body p-0">
+        {% if top_products %}
+        {% set max_rev = top_products[0].revenue | float %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>#</th><th>Producto</th><th class="text-end">Cant.</th><th class="text-end">Facturado</th></tr></thead>
+            <tbody>
+              {% for p in top_products %}
+              <tr>
+                <td class="text-muted fw-700" style="width:32px;">{{ loop.index }}</td>
+                <td>
+                  <div class="fw-600" style="font-size:13px;">{{ p.name[:35] }}{% if p.name|length > 35 %}…{% endif %}</div>
+                  <code style="font-size:10px;color:#aaa;">{{ p.sku }}</code>
+                  <div style="height:3px;background:#eef0f4;border-radius:2px;margin-top:4px;">
+                    <div style="width:{{ ((p.revenue | float) / max_rev * 100) | round }}%;height:3px;background:var(--accent);border-radius:2px;"></div>
+                  </div>
+                </td>
+                <td class="text-end fw-600">{{ p.qty }}</td>
+                <td class="text-end fw-700 text-accent">{{ p.revenue | currency }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-trophy"></i><p>Sin ventas registradas</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-calendar3 text-accent"></i> Tendencia 6 Meses</div>
+      <div class="card-body">
+        <canvas id="chartMonthly" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 4 — Alertas stock + Últimas ventas -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-exclamation-triangle text-warning"></i> Alertas de Stock</span>
+        <a href="{{ url_for('inventory.index') }}?stock=low" class="btn btn-sm btn-outline-warning">Ver todos ({{ low_stock_count }})</a>
+      </div>
+      <div class="card-body p-0">
+        {% if low_stock_products %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Producto</th><th>SKU</th><th class="text-center">Stock</th><th class="text-center">Mín.</th></tr></thead>
+            <tbody>
+              {% for p in low_stock_products %}
+              <tr class="stock-row" onclick="location.href='{{ url_for('inventory.product_detail', pid=p.id) }}'">
+                <td>
+                  <div class="fw-600" style="font-size:13px;">{{ p.name[:26] }}{% if p.name|length > 26 %}…{% endif %}</div>
+                  <div style="font-size:11px;color:#aaa;">{{ p.category_obj.name if p.category_obj else '' }}</div>
+                </td>
+                <td><code style="font-size:10px;">{{ p.sku }}</code></td>
+                <td class="text-center">
+                  {% if p.stock == 0 %}<span class="badge badge-stock-out">SIN STOCK</span>
+                  {% else %}<span class="badge badge-stock-low">{{ p.stock }}</span>{% endif %}
+                </td>
+                <td class="text-center text-muted">{{ p.min_stock }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-check-circle" style="color:var(--success)"></i><p>Todo el stock en orden 🎉</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history text-accent"></i> Últimas Ventas</span>
+        <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_sales %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Método</th><th class="text-end">Total</th><th></th></tr></thead>
+            <tbody>
+              {% set pm_icons = {'efectivo':'💵','tarjeta':'💳','transferencia':'🏦','cuenta_corriente':'📒'} %}
+              {% for s in recent_sales %}
+              <tr>
+                <td><a href="{{ url_for('sales.sale_detail', sid=s.id) }}" class="fw-600 text-accent">#{{ s.id }}</a></td>
+                <td style="font-size:12px;">{{ s.created_at.strftime('%d/%m %H:%M') }}</td>
+                <td style="font-size:13px;">{{ s.customer.name[:18] if s.customer else '<span class="text-muted">Mostrador</span>'|safe }}</td>
+                <td style="font-size:12px;">{{ pm_icons.get(s.payment_method,'💰') }} {{ s.payment_method | capitalize }}</td>
+                <td class="text-end fw-700">{{ s.total | currency }}</td>
+                <td>
+                  {% if s.status=='completed' %}<span class="badge badge-stock-ok" style="font-size:10px;">✓</span>
+                  {% elif s.status=='cancelled' %}<span class="badge badge-stock-out" style="font-size:10px;">✗</span>
+                  {% else %}<span class="badge badge-stock-low" style="font-size:10px;">⏳</span>{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-receipt"></i><p>No hay ventas registradas.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 5 — Promociones vigentes -->
+{% if active_promos %}
+<div class="row g-3 mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bank text-accent"></i> Promociones Bancarias Vigentes</span>
+        <a href="{{ url_for('promotions.index') }}" class="btn btn-sm btn-outline-secondary">Gestionar</a>
+      </div>
+      <div class="card-body">
+        {% for p in active_promos %}
+        <span class="promo-badge">
+          🏦 {{ p.bank }}{% if p.card_type and p.card_type != 'Todas' %} · {{ p.card_type }}{% endif %}
+          {% if p.installments > 1 %} · {{ p.installments }}c{% if p.interest_rate == 0 %}SI{% endif %}{% endif %}
+          {% if p.discount_pct > 0 %} · {{ p.discount_pct }}%OFF{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const dailyData   = {{ daily_data | safe }};
+const monthlyData = {{ monthly_data | safe }};
+const tickFont = { family: 'Inter, Poppins, sans-serif', size: 10 };
+
+new Chart(document.getElementById('chartDaily'), {
+  type: 'line',
+  data: {
+    labels: dailyData.map(d => d.day),
+    datasets: [{ data: dailyData.map(d => d.total), fill: true,
+      backgroundColor: 'rgba(37,99,235,.1)', borderColor: '#2563eb',
+      borderWidth: 2, tension: 0.4, pointRadius: 2, pointBackgroundColor: '#2563eb' }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => '$'+(v>=1000?(v/1000).toFixed(0)+'k':v), font: tickFont }, grid: { color: '#f0f2f4' } },
+      x: { ticks: { maxTicksLimit: 10, maxRotation: 0, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartMonthly'), {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => d.month),
+    datasets: [
+      { label: 'Facturado ($)', data: monthlyData.map(d => d.total),
+        backgroundColor: 'rgba(37,99,235,.75)', borderColor:'#2563eb',
+        borderWidth:2, borderRadius:6, yAxisID:'y' },
+      { label: '# Ventas', data: monthlyData.map(d => d.qty), type:'line',
+        borderColor:'#16a34a', backgroundColor:'transparent',
+        borderWidth:2, tension:0.3, pointRadius:4, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display:true, position:'top', labels: { font: tickFont, boxWidth:12 } } },
+    scales: {
+      y:  { position:'left',  ticks: { callback: v=>'$'+(v/1000).toFixed(0)+'k', font:tickFont }, grid: { color:'#f0f2f4' } },
+      y2: { position:'right', ticks: { font:tickFont }, grid: { display:false } },
+      x:  { ticks: { font:tickFont }, grid: { display:false } }
+    }
+  }
+});
+</script>
+{% endblock %}
 
 <div class="page-header">
   <div>

@@ -62,6 +62,11 @@
 
       {% if current_user.is_admin %}
       <li class="nav-section">Administración</li>
+      <li class="{% if request.endpoint and request.endpoint.startswith('promotions.') %}active{% endif %}">
+        <a href="{{ url_for('promotions.index') }}">
+          <i class="bi bi-bank"></i><span>Promociones</span>
+        </a>
+      </li>
       <li class="{% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}">
         <a href="{{ url_for('suppliers.index') }}">
           <i class="bi bi-truck"></i><span>Proveedores</span>

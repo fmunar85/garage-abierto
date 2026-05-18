@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Promociones Bancarias{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-bank text-accent"></i> Promociones Bancarias</h1>
+    <div class="page-subtitle">Gestión de cuotas, descuentos y beneficios por banco</div>
+  </div>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('promotions.new_promotion') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Nueva Promoción
+  </a>
+  {% endif %}
+</div>
+
+<!-- Vigentes -->
+{% set vigentes = promos | selectattr('is_current') | list %}
+{% set vencidas = promos | rejectattr('is_current') | list %}
+
+{% if vigentes %}
+<h5 class="fw-700 mb-3 text-success"><i class="bi bi-check-circle-fill me-2"></i>Vigentes ({{ vigentes|length }})</h5>
+<div class="row g-3 mb-4">
+  {% for p in vigentes %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-0" style="border-left: 4px solid #3fb950 !important; border-left-width:4px!important;">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="fw-700 fs-5">{{ p.bank }}</div>
+            {% if p.card_type %}<span class="badge bg-secondary">{{ p.card_type }}</span>{% endif %}
+          </div>
+          {% if current_user.is_admin %}
+          <div class="dropdown">
+            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('promotions.edit_promotion', pid=p.id) }}"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+              <li>
+                <form method="POST" action="{{ url_for('promotions.toggle_promotion', pid=p.id) }}" class="d-inline">
+                  <button class="dropdown-item text-warning" type="submit"><i class="bi bi-pause-circle me-2"></i>Desactivar</button>
+                </form>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="POST" action="{{ url_for('promotions.delete_promotion', pid=p.id) }}"
+                      onsubmit="return confirm('¿Eliminar esta promoción?')">
+                  <button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2"></i>Eliminar</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-2">
+          {% if p.installments > 1 %}
+          <span class="badge bg-primary fs-6 me-1">{{ p.installments }} cuotas
+            {% if p.interest_rate == 0 %}sin interés{% else %}+ {{ p.interest_rate }}%{% endif %}
+          </span>
+          {% endif %}
+          {% if p.discount_pct > 0 %}
+          <span class="badge bg-success fs-6">{{ p.discount_pct }}% OFF</span>
+          {% endif %}
+        </div>
+
+        {% if p.description %}
+        <p class="text-muted mb-2" style="font-size:13px;">{{ p.description }}</p>
+        {% endif %}
+
+        <div class="text-muted" style="font-size:12px;">
+          <i class="bi bi-calendar-range me-1"></i>
+          {{ p.valid_from.strftime('%d/%m/%Y') }} al {{ p.valid_until.strftime('%d/%m/%Y') }}
+          {% set days_left = (p.valid_until - today).days %}
+          {% if days_left <= 7 %}
+          <span class="badge bg-warning text-dark ms-1">Vence en {{ days_left }}d</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No hay promociones vigentes.</div>
+{% endif %}
+
+<!-- Vencidas / inactivas -->
+{% if vencidas %}
+<h5 class="fw-600 mb-3 text-muted"><i class="bi bi-clock-history me-2"></i>Historial ({{ vencidas|length }})</h5>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr>
+          <th>Banco</th><th>Tarjeta</th><th>Beneficio</th><th>Vigencia</th><th>Estado</th>
+          {% if current_user.is_admin %}<th></th>{% endif %}
+        </tr></thead>
+        <tbody>
+          {% for p in vencidas %}
+          <tr>
+            <td class="fw-600">{{ p.bank }}</td>
+            <td>{{ p.card_type or '—' }}</td>
+            <td>
+              {% if p.installments > 1 %}<span class="badge bg-primary">{{ p.installments }}c{% if p.interest_rate == 0 %}SI{% endif %}</span>{% endif %}
+              {% if p.discount_pct > 0 %}<span class="badge bg-success">{{ p.discount_pct }}%OFF</span>{% endif %}
+            </td>
+            <td class="text-muted" style="font-size:12px;">
+              {{ p.valid_from.strftime('%d/%m/%y') }} – {{ p.valid_until.strftime('%d/%m/%y') }}
+            </td>
+            <td>
+              {% if not p.active %}<span class="badge bg-secondary">Inactiva</span>
+              {% else %}<span class="badge bg-danger">Vencida</span>{% endif %}
+            </td>
+            {% if current_user.is_admin %}
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{{ url_for('promotions.edit_promotion', pid=p.id) }}" class="btn btn-xs btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('promotions.delete_promotion', pid=p.id) }}"
+                      onsubmit="return confirm('¿Eliminar?')">
+                  <button class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if not promos %}
+<div class="empty-state mt-5">
+  <i class="bi bi-bank"></i>
+  <p>No hay promociones cargadas aún.</p>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('promotions.new_promotion') }}" class="btn btn-primary mt-2">Crear primera promoción</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

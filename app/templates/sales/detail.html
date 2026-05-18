@@ -12,6 +12,9 @@
 <div class="page-header">
   <h1 class="page-title"><i class="bi bi-receipt text-accent"></i> Venta #{{ sale.id }}</h1>
   <div class="d-flex gap-2 align-items-center">
+    <a href="{{ url_for('sales.invoice', sid=sale.id) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer"></i> Imprimir / PDF
+    </a>
     {% if sale.status == 'completed' %}
     <span class="badge badge-stock-ok px-3 py-2">Completada</span>
     {% elif sale.status == 'cancelled' %}

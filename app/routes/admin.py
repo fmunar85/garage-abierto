@@ -10,65 +10,170 @@ from datetime import date, timedelta
 from sqlalchemy import func
 import json
 
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask_login import login_required, current_user
+from app import db
+from app.models.product import Product, Category
+from app.models.sale import Sale, SaleItem
+from app.models.customer import Customer
+from app.models.user import User
+from app.models.promotion import BankPromotion
+from app.utils import admin_required
+from datetime import date, timedelta
+from sqlalchemy import func
+import json
+
 admin_bp = Blueprint('admin', __name__)
 
 
 @admin_bp.route('/')
 @login_required
 def dashboard():
+    today = date.today()
+    month_start = today.replace(day=1)
+    prev_month_start = (month_start - timedelta(days=1)).replace(day=1)
+    prev_month_end = month_start
+
+    # ── KPIs básicos ──────────────────────────────────────────
     total_products = Product.query.filter_by(active=True).count()
+    total_customers = Customer.query.filter_by(active=True).count()
+
     low_stock_products = Product.query.filter(
         Product.stock <= Product.min_stock,
         Product.active == True
-    ).order_by(Product.stock).limit(8).all()
+    ).order_by(Product.stock).all()
 
-    today = date.today()
+    out_of_stock_count = sum(1 for p in low_stock_products if p.stock == 0)
+
+    # Ventas hoy
     today_sales = Sale.query.filter(
         func.date(Sale.created_at) == today,
         Sale.status != 'cancelled'
     ).all()
     today_revenue = sum(float(s.total) for s in today_sales)
+    today_cost = sum(
+        float(si.unit_price) * si.quantity * 0  # we'll calc from products
+        for s in today_sales for si in s.items
+    )
 
-    total_customers = Customer.query.filter_by(active=True).count()
-    recent_sales = Sale.query.order_by(Sale.created_at.desc()).limit(10).all()
+    # Ventas mes actual
+    month_sales_q = Sale.query.filter(
+        func.date(Sale.created_at) >= month_start,
+        Sale.status != 'cancelled'
+    ).all()
+    month_revenue = sum(float(s.total) for s in month_sales_q)
 
-    # Monthly chart data (last 6 months)
+    # Ventas mes anterior (para comparativa)
+    prev_month_revenue_raw = db.session.query(func.sum(Sale.total)).filter(
+        func.date(Sale.created_at) >= prev_month_start,
+        func.date(Sale.created_at) < prev_month_end,
+        Sale.status != 'cancelled'
+    ).scalar() or 0
+    prev_month_revenue = float(prev_month_revenue_raw)
+
+    month_delta_pct = 0
+    if prev_month_revenue > 0:
+        month_delta_pct = round(((month_revenue - prev_month_revenue) / prev_month_revenue) * 100, 1)
+
+    # Ticket promedio del mes
+    avg_ticket = (month_revenue / len(month_sales_q)) if month_sales_q else 0
+
+    # Margen bruto estimado del mes (precio venta - costo)
+    gross_profit = 0
+    for s in month_sales_q:
+        for si in s.items:
+            cost = float(si.product.cost_price or 0)
+            gross_profit += (float(si.unit_price) - cost) * si.quantity
+    gross_margin_pct = round((gross_profit / month_revenue * 100), 1) if month_revenue > 0 else 0
+
+    # ── Ventas por método de pago (mes actual) ────────────────
+    payment_data = db.session.query(
+        Sale.payment_method,
+        func.count(Sale.id).label('cnt'),
+        func.sum(Sale.total).label('total')
+    ).filter(
+        func.date(Sale.created_at) >= month_start,
+        Sale.status != 'cancelled'
+    ).group_by(Sale.payment_method).all()
+
+    # ── Últimas 30 días - gráfico diario ─────────────────────
+    daily_data = []
+    for i in range(29, -1, -1):
+        d = today - timedelta(days=i)
+        rev = db.session.query(func.sum(Sale.total)).filter(
+            func.date(Sale.created_at) == d,
+            Sale.status != 'cancelled'
+        ).scalar() or 0
+        daily_data.append({'day': d.strftime('%d/%m'), 'total': float(rev)})
+
+    # ── Últimos 6 meses ───────────────────────────────────────
     monthly_data = []
     for i in range(5, -1, -1):
         m_start = (today.replace(day=1) - timedelta(days=i * 32)).replace(day=1)
-        if i == 0:
-            m_end = today + timedelta(days=1)
-        else:
-            m_end = (m_start.replace(day=28) + timedelta(days=4)).replace(day=1)
-        month_sales = db.session.query(func.sum(Sale.total)).filter(
+        m_end = (m_start.replace(day=28) + timedelta(days=4)).replace(day=1) if i > 0 else today + timedelta(days=1)
+        rev = db.session.query(func.sum(Sale.total)).filter(
             func.date(Sale.created_at) >= m_start,
             func.date(Sale.created_at) < m_end,
             Sale.status != 'cancelled'
         ).scalar() or 0
-        monthly_data.append({'month': m_start.strftime('%b %Y'), 'total': float(month_sales)})
+        qty = db.session.query(func.count(Sale.id)).filter(
+            func.date(Sale.created_at) >= m_start,
+            func.date(Sale.created_at) < m_end,
+            Sale.status != 'cancelled'
+        ).scalar() or 0
+        monthly_data.append({'month': m_start.strftime('%b %y'), 'total': float(rev), 'qty': qty})
 
-    # Top 5 products by quantity sold
+    # ── Top 8 productos por facturación (mes) ────────────────
     top_products = db.session.query(
         Product.name,
-        func.sum(SaleItem.quantity).label('qty')
-    ).join(SaleItem).group_by(Product.id).order_by(func.sum(SaleItem.quantity).desc()).limit(5).all()
+        Product.sku,
+        func.sum(SaleItem.quantity).label('qty'),
+        func.sum(SaleItem.subtotal).label('revenue')
+    ).join(SaleItem).join(Sale).filter(
+        func.date(Sale.created_at) >= month_start,
+        Sale.status != 'cancelled'
+    ).group_by(Product.id).order_by(func.sum(SaleItem.subtotal).desc()).limit(8).all()
 
-    # Category breakdown
-    cat_data = db.session.query(
-        Category.name,
-        func.count(Product.id).label('count')
-    ).join(Product, Product.category_id == Category.id).filter(Product.active == True).group_by(Category.id).all()
+    # Si no hay del mes, mostrar histórico
+    if not top_products:
+        top_products = db.session.query(
+            Product.name,
+            Product.sku,
+            func.sum(SaleItem.quantity).label('qty'),
+            func.sum(SaleItem.subtotal).label('revenue')
+        ).join(SaleItem).group_by(Product.id).order_by(func.sum(SaleItem.subtotal).desc()).limit(8).all()
+
+    # ── Ventas recientes ──────────────────────────────────────
+    recent_sales = Sale.query.order_by(Sale.created_at.desc()).limit(8).all()
+
+    # ── Promociones vigentes ──────────────────────────────────
+    active_promos = BankPromotion.query.filter(
+        BankPromotion.active == True,
+        BankPromotion.valid_from <= today,
+        BankPromotion.valid_until >= today
+    ).all()
 
     return render_template('admin/dashboard.html',
-                           total_products=total_products,
-                           low_stock_products=low_stock_products,
-                           today_sales_count=len(today_sales),
-                           today_revenue=today_revenue,
-                           total_customers=total_customers,
-                           recent_sales=recent_sales,
-                           monthly_data=json.dumps(monthly_data),
-                           top_products=top_products,
-                           cat_data=json.dumps([{'name': c.name, 'count': c.count} for c in cat_data]))
+        total_products=total_products,
+        total_customers=total_customers,
+        low_stock_products=low_stock_products[:8],
+        low_stock_count=len(low_stock_products),
+        out_of_stock_count=out_of_stock_count,
+        today_sales_count=len(today_sales),
+        today_revenue=today_revenue,
+        month_revenue=month_revenue,
+        prev_month_revenue=prev_month_revenue,
+        month_delta_pct=month_delta_pct,
+        avg_ticket=avg_ticket,
+        gross_margin_pct=gross_margin_pct,
+        gross_profit=gross_profit,
+        payment_data=payment_data,
+        daily_data=json.dumps(daily_data),
+        monthly_data=json.dumps(monthly_data),
+        top_products=top_products,
+        recent_sales=recent_sales,
+        active_promos=active_promos,
+    )
 
 
 @admin_bp.route('/usuarios')

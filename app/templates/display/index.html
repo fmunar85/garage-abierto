@@ -128,6 +128,7 @@
       gap: 18px;
     }
 
+    /* ── PRODUCT CARD — clickable ── */
     .product-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -135,6 +136,7 @@
       overflow: hidden;
       transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
       animation: fadeIn 0.4s ease forwards;
+      cursor: pointer;
     }
     .product-card:hover {
       transform: translateY(-4px);
@@ -195,6 +197,73 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── PRODUCT MODAL ── */
+    .prod-modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.75);
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .prod-modal-overlay.open { display: flex; }
+    .prod-modal {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 700px; width: 90%;
+      max-height: 85vh; overflow-y: auto;
+      animation: modalIn .25s ease;
+      position: relative;
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(.95)translateY(20px)} to{opacity:1;transform:scale(1)translateY(0)} }
+    .prod-modal-img {
+      width: 100%; max-height: 300px; object-fit: cover;
+      border-radius: 18px 18px 0 0;
+    }
+    .prod-modal-img-placeholder {
+      width: 100%; height: 220px; border-radius: 18px 18px 0 0;
+      background: linear-gradient(135deg, var(--surface), #1e2a3a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px; color: rgba(45,156,219,.3);
+    }
+    .prod-modal-body { padding: 24px 28px 28px; }
+    .prod-modal-close {
+      position: absolute; top: 14px; right: 16px;
+      background: rgba(0,0,0,.5); border: none; color: #fff;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 18px; transition: background .2s;
+    }
+    .prod-modal-close:hover { background: rgba(255,255,255,.2); }
+    .prod-modal-brand { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+    .prod-modal-name  { font-size: 22px; font-weight: 700; color: var(--text); margin: 6px 0 4px; line-height: 1.3; }
+    .prod-modal-sku   { font-size: 12px; color: var(--text-muted); font-family: monospace; }
+    .prod-modal-price { font-size: 36px; font-weight: 800; color: var(--gold); margin: 14px 0 4px; }
+    .prod-modal-desc  { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-top: 10px; }
+    .prod-modal-divider { border-color: var(--border); margin: 16px 0; }
+    .prod-modal-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-muted);
+      margin: 3px;
+    }
+    .prod-modal-pill strong { color: var(--text); }
+
+    /* ── PROMOTIONS SECTION ── */
+    .promos-bar {
+      background: linear-gradient(135deg, #0d1f0a, #112210);
+      border-bottom: 1px solid rgba(34,197,94,.2);
+      padding: 12px 40px;
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .promo-chip {
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 13px; font-weight: 600; color: #4ade80;
+    }
+    .promos-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(34,197,94,.7); margin-right: 4px; }
   </style>
 </head>
 <body class="display-body">
@@ -231,6 +300,21 @@
 </div>
 {% endif %}
 
+<!-- PROMOTIONS BAR -->
+{% if promos %}
+<div class="promos-bar">
+  <span class="promos-label"><i class="bi bi-bank me-1"></i>Financiación:</span>
+  {% for p in promos %}
+  <span class="promo-chip">
+    🏦 {{ p.bank }}
+    {% if p.installments > 1 %} · {{ p.installments }} cuotas{% if p.interest_rate == 0 %} sin interés{% endif %}{% endif %}
+    {% if p.discount_pct > 0 %} · {{ p.discount_pct }}% OFF{% endif %}
+    {% if p.card_type and p.card_type != 'Todas' %} ({{ p.card_type }}){% endif %}
+  </span>
+  {% endfor %}
+</div>
+{% endif %}
+
 <!-- CATEGORY TABS -->
 {% if categories %}
 <div class="cat-tabs">
@@ -259,7 +343,15 @@
       </div>
       <div class="product-grid">
         {% for p in cat_products %}
-        <div class="product-card">
+        <div class="product-card"
+             onclick="openModal(this)"
+             data-name="{{ p.name | e }}"
+             data-brand="{{ (p.brand or cat.name) | e }}"
+             data-sku="{{ p.sku | e }}"
+             data-price="{{ p.price | currency }}"
+             data-desc="{{ (p.description or '') | e }}"
+             data-img="{{ p.image_src or '' }}"
+             data-cat="{{ cat.name | e }}">
           {% if p.image_src %}
           <img src="{{ p.image_src }}" class="product-img" alt="{{ p.name }}">
           {% else %}
@@ -280,7 +372,15 @@
     {% if products %}
     <div class="product-grid mt-4">
       {% for p in products %}
-      <div class="product-card">
+      <div class="product-card"
+           onclick="openModal(this)"
+           data-name="{{ p.name | e }}"
+           data-brand="{{ (p.brand or '') | e }}"
+           data-sku="{{ p.sku | e }}"
+           data-price="{{ p.price | currency }}"
+           data-desc="{{ (p.description or '') | e }}"
+           data-img="{{ p.image_src or '' }}"
+           data-cat="">
         {% if p.image_src %}
         <img src="{{ p.image_src }}" class="product-img" alt="{{ p.name }}">
         {% else %}
@@ -301,6 +401,23 @@
     </div>
     {% endif %}
   {% endif %}
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="prod-modal-overlay" id="prodModal" onclick="closeModalIfOverlay(event)">
+  <div class="prod-modal" id="prodModalInner">
+    <button class="prod-modal-close" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+    <div id="modalImgWrap"></div>
+    <div class="prod-modal-body">
+      <div class="prod-modal-brand" id="modalBrand"></div>
+      <div class="prod-modal-name"  id="modalName"></div>
+      <div class="prod-modal-sku"   id="modalSku"></div>
+      <div class="prod-modal-price" id="modalPrice"></div>
+      <div class="prod-modal-desc"  id="modalDesc"></div>
+      <hr class="prod-modal-divider">
+      <div id="modalPills"></div>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -334,6 +451,52 @@ function filterCat(catId, el) {
     });
   }
 }
+
+// Product modal
+function openModal(card) {
+  const name  = card.dataset.name  || '';
+  const brand = card.dataset.brand || '';
+  const sku   = card.dataset.sku   || '';
+  const price = card.dataset.price || '';
+  const desc  = card.dataset.desc  || '';
+  const img   = card.dataset.img   || '';
+  const cat   = card.dataset.cat   || '';
+
+  // Image
+  const wrap = document.getElementById('modalImgWrap');
+  if (img) {
+    wrap.innerHTML = `<img src="${img}" class="prod-modal-img" alt="${name}" onerror="this.parentNode.innerHTML='<div class=prod-modal-img-placeholder><i class=bi\\ bi-droplet-half></i></div>'">`;
+  } else {
+    wrap.innerHTML = '<div class="prod-modal-img-placeholder"><i class="bi bi-droplet-half"></i></div>';
+  }
+
+  document.getElementById('modalBrand').textContent = brand;
+  document.getElementById('modalName').textContent  = name;
+  document.getElementById('modalSku').textContent   = sku ? 'SKU: ' + sku : '';
+  document.getElementById('modalPrice').textContent = price;
+  document.getElementById('modalDesc').textContent  = desc;
+
+  // Pills
+  const pills = [];
+  if (brand) pills.push(`<span class="prod-modal-pill"><i class="bi bi-tag-fill" style="color:var(--gold)"></i> <strong>${brand}</strong></span>`);
+  if (cat)   pills.push(`<span class="prod-modal-pill"><i class="bi bi-grid" style="color:var(--accent)"></i> <strong>${cat}</strong></span>`);
+  if (sku)   pills.push(`<span class="prod-modal-pill"><i class="bi bi-upc-scan"></i> <strong>${sku}</strong></span>`);
+  document.getElementById('modalPills').innerHTML = pills.join('');
+
+  document.getElementById('prodModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('prodModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalIfOverlay(e) {
+  if (e.target.id === 'prodModal') closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>
