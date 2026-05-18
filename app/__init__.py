@@ -11,14 +11,11 @@ def _run_column_migrations(db):
     """Aplica ALTER TABLE para columnas nuevas que no existen todavía en la BD."""
     migrations = [
         # (tabla, columna, definición SQL)
-        ('products',          'internal_barcode', 'VARCHAR(16)'),
-        ('barcode_sequences', 'last_seq',         None),           # tabla nueva → solo create_all
-        ('stock_movements',   'product_id',       None),           # tabla nueva → solo create_all
+        ('products', 'internal_barcode', 'VARCHAR(16)'),
     ]
     with db.engine.connect() as conn:
+        # ── 1. ALTER TABLE para columnas nuevas ──────────────────────────────
         for table, column, col_def in migrations:
-            if col_def is None:
-                continue  # tablas nuevas se crean con create_all, no necesitan ALTER
             try:
                 result = conn.execute(
                     db.text(
@@ -33,12 +30,31 @@ def _run_column_migrations(db):
                     ))
                     conn.commit()
             except Exception as e:
-                # Si la tabla no existe aún, create_all la creará después
                 conn.rollback()
                 import logging
                 logging.getLogger(__name__).warning(
                     'Migration skipped for %s.%s: %s', table, column, e
                 )
+
+        # ── 2. Inicializar BarcodeSequence si la tabla existe pero está vacía ─
+        try:
+            exists = conn.execute(db.text(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_name = 'barcode_sequence'"
+            )).fetchone()
+            if exists:
+                row = conn.execute(db.text(
+                    "SELECT id FROM barcode_sequence WHERE id = 1"
+                )).fetchone()
+                if row is None:
+                    conn.execute(db.text(
+                        "INSERT INTO barcode_sequence (id, last_val) VALUES (1, 0)"
+                    ))
+                    conn.commit()
+        except Exception as e:
+            conn.rollback()
+            import logging
+            logging.getLogger(__name__).warning('BarcodeSequence init skipped: %s', e)
 
 
 def create_app():

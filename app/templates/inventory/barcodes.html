@@ -395,35 +395,49 @@ document.getElementById('btnConfirmarIngreso').addEventListener('click', async (
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ product_id: pid, quantity: qty }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error');
 
-    document.getElementById('ingResultadoMsg').textContent =
+    // Parsear JSON de forma segura (el server puede devolver HTML en caso de error 500)
+    let data;
+    try { data = await res.json(); }
+    catch { throw new Error(`Error del servidor (HTTP ${res.status}). Verificá que la tabla product_units exista en la BD.`); }
+
+    if (!res.ok) throw new Error(data.error || `Error HTTP ${res.status}`);
+
+    const msgEl = document.getElementById('ingResultadoMsg');
+    if (msgEl) msgEl.textContent =
       `✅ ${data.quantity} código${data.quantity > 1 ? 's' : ''} generado${data.quantity > 1 ? 's' : ''} para "${data.product}"`;
 
     const lista = document.getElementById('ingListaCodigos');
-    lista.innerHTML = '';
-    data.barcodes.forEach(cod => {
-      const col = document.createElement('div');
-      col.className = 'col-6 col-md-4 col-lg-3';
-      col.innerHTML = `<div class="border rounded p-1 text-center small bg-white">
-        <svg class="bc-gen" data-v="${cod}"></svg>
-        <div class="font-monospace text-success fw-bold" style="font-size:0.65rem">${cod}</div></div>`;
-      lista.appendChild(col);
-    });
-    document.getElementById('ingResultado').classList.remove('d-none');
-    lista.querySelectorAll('.bc-gen').forEach(svg => renderBarcode(svg, svg.dataset.v));
+    if (lista) {
+      lista.innerHTML = '';
+      (data.barcodes || []).forEach(cod => {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-4 col-lg-3';
+        col.innerHTML = `<div class="border rounded p-1 text-center small bg-white">
+          <svg class="bc-gen" data-v="${cod}"></svg>
+          <div class="font-monospace text-success fw-bold" style="font-size:0.65rem">${cod}</div></div>`;
+        lista.appendChild(col);
+      });
+      lista.querySelectorAll('.bc-gen').forEach(svg => renderBarcode(svg, svg.dataset.v));
+    }
+    const resEl = document.getElementById('ingResultado');
+    if (resEl) resEl.classList.remove('d-none');
 
-    // Actualizar fila en tabla
+    // Actualizar fila en tabla (con null-checks defensivos)
     const fila = document.querySelector(`.fila-producto[data-pid="${pid}"]`);
     if (fila) {
-      const tdU = fila.querySelector('td:nth-child(5)');
-      const tdF = fila.querySelector('td:nth-child(6)');
-      const bdg = tdU.querySelector('.badge');
-      const actual = parseInt(bdg?.textContent || '0');
-      tdU.innerHTML = `<span class="badge bg-success rounded-pill fs-6">${actual + qty}</span>`;
-      const ahora = new Date();
-      tdF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+      const tds  = fila.querySelectorAll('td');
+      const tdU  = tds[4];  // índice 4 = 5ª columna (Unidades)
+      const tdF  = tds[5];  // índice 5 = 6ª columna (Último Ingreso)
+      if (tdU) {
+        const bdg    = tdU.querySelector('.badge');
+        const actual = parseInt(bdg?.textContent || '0');
+        tdU.innerHTML = `<span class="badge bg-success rounded-pill fs-6">${actual + qty}</span>`;
+      }
+      if (tdF) {
+        const ahora = new Date();
+        tdF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+      }
       fila.dataset.estado = 'con';
     }
     mostrarToast(`${qty} código${qty>1?'s':''} generado${qty>1?'s':''} para ${data.product}`);

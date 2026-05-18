@@ -327,27 +327,33 @@ def barcodes():
 @admin_required
 def receive_units():
     """Genera N ProductUnit para un producto. Devuelve JSON con los barcodes generados."""
-    data       = request.get_json() or {}
-    pid        = data.get('product_id')
-    qty        = int(data.get('quantity', 0))
+    try:
+        data       = request.get_json() or {}
+        pid        = data.get('product_id')
+        qty        = int(data.get('quantity', 0))
 
-    if not pid or qty <= 0:
-        return jsonify({'error': 'Producto y cantidad requeridos'}), 400
-    if qty > 500:
-        return jsonify({'error': 'Máximo 500 unidades por operación'}), 400
+        if not pid or qty <= 0:
+            return jsonify({'error': 'Producto y cantidad requeridos'}), 400
+        if qty > 500:
+            return jsonify({'error': 'Máximo 500 unidades por operación'}), 400
 
-    product = Product.query.get_or_404(pid)
-    units   = ProductUnit.generate_for_product(product, qty, user_id=current_user.id)
-    db.session.commit()
+        product = Product.query.get_or_404(pid)
+        units   = ProductUnit.generate_for_product(product, qty, user_id=current_user.id)
+        db.session.commit()
 
-    return jsonify({
-        'ok':       True,
-        'product':  product.name,
-        'sku':      product.sku,
-        'quantity': qty,
-        'barcodes': [u.barcode for u in units],
-        'ids':      [u.id for u in units],
-    })
+        return jsonify({
+            'ok':       True,
+            'product':  product.name,
+            'sku':      product.sku,
+            'quantity': qty,
+            'barcodes': [u.barcode for u in units],
+            'ids':      [u.id for u in units],
+        })
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        current_app.logger.error(f'Error en receive_units: {traceback.format_exc()}')
+        return jsonify({'error': str(e)}), 500
 
 
 @inventory_bp.route('/unidad/<int:uid>', methods=['DELETE'])
@@ -355,10 +361,14 @@ def receive_units():
 @admin_required
 def delete_unit(uid):
     """Elimina una unidad física (ProductUnit)."""
-    unit = ProductUnit.query.get_or_404(uid)
-    db.session.delete(unit)
-    db.session.commit()
-    return jsonify({'ok': True, 'deleted_id': uid})
+    try:
+        unit = ProductUnit.query.get_or_404(uid)
+        db.session.delete(unit)
+        db.session.commit()
+        return jsonify({'ok': True, 'deleted_id': uid})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 @inventory_bp.route('/api/producto/<int:pid>/unidades')
