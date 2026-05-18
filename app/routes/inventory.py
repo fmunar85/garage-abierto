@@ -284,6 +284,96 @@ def product_label(pid):
     return render_template('inventory/label.html', product=product)
 
 
+# ── API: buscar producto por SKU (para recepción con escáner) ─────────────────
+@inventory_bp.route('/api/buscar-sku')
+@login_required
+def api_search_sku():
+    sku = request.args.get('sku', '').strip().upper()
+    if not sku:
+        return jsonify({'error': 'SKU vacío'}), 400
+    p = Product.query.filter(
+        db.or_(
+            Product.sku.ilike(sku),
+            Product.sku.ilike(f'%{sku}%'),
+        )
+    ).first()
+    if not p:
+        return jsonify({'error': f'No se encontró ningún producto con SKU "{sku}"'}), 404
+    return jsonify({
+        'id':       p.id,
+        'sku':      p.sku,
+        'name':     p.name,
+        'brand':    p.brand or '',
+        'category': p.category_obj.name if p.category_obj else '',
+        'price':    float(p.price),
+        'cost':     float(p.cost_price) if p.cost_price else 0,
+        'stock':    p.stock,
+        'image':    p.image_src or '',
+    })
+
+
+# ── Recepción de Mercadería ───────────────────────────────────────────────────
+@inventory_bp.route('/recepcion')
+@login_required
+def reception():
+    """Pantalla para ingresar mercadería escaneando o buscando por SKU."""
+    suppliers = Supplier.query.filter_by(active=True).order_by(Supplier.name).all()
+    return render_template('inventory/reception.html', suppliers=suppliers)
+
+
+@inventory_bp.route('/recepcion/aplicar', methods=['POST'])
+@login_required
+def apply_reception():
+    """Aplica el ingreso de mercadería: suma stock y registra movimientos."""
+    data        = request.get_json()
+    items       = data.get('items', [])
+    note        = data.get('note', '').strip() or 'Recepción de mercadería'
+    supplier_id = data.get('supplier_id') or None
+
+    if not items:
+        return jsonify({'error': 'Sin ítems'}), 400
+
+    resultados = []
+    for item in items:
+        pid       = item.get('id')
+        qty       = int(item.get('qty', 0))
+        new_cost  = item.get('cost')   # puede ser None si no se actualizó
+
+        if qty <= 0:
+            continue
+
+        p = Product.query.get(pid)
+        if not p:
+            continue
+
+        qty_before = p.stock
+        p.stock   += qty
+
+        if new_cost is not None and float(new_cost) > 0:
+            p.cost_price = float(new_cost)
+
+        reason = note
+        if supplier_id:
+            sup = Supplier.query.get(supplier_id)
+            if sup:
+                reason = f'{note} — {sup.name}'
+
+        mov = StockMovement(
+            product_id=pid,
+            user_id=current_user.id,
+            type='reception',
+            qty_before=qty_before,
+            qty_change=qty,
+            qty_after=p.stock,
+            reason=reason,
+        )
+        db.session.add(mov)
+        resultados.append({'sku': p.sku, 'name': p.name, 'qty': qty, 'stock_after': p.stock})
+
+    db.session.commit()
+    return jsonify({'ok': True, 'updated': len(resultados), 'items': resultados})
+
+
 @inventory_bp.route('/producto/<int:pid>/eliminar', methods=['POST'])
 @login_required
 @admin_required

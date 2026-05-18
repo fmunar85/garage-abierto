@@ -9,6 +9,9 @@
   </div>
   <div class="d-flex gap-2">
     {% if current_user.is_admin %}
+    <a href="{{ url_for('inventory.reception') }}" class="btn btn-success btn-sm">
+      <i class="bi bi-box-arrow-in-down me-1"></i>Recepción
+    </a>
     <a href="{{ url_for('inventory.stock_count') }}" class="btn btn-outline-warning btn-sm">
       <i class="bi bi-clipboard-check me-1"></i>Recuento
     </a>

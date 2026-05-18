@@ -1,0 +1,539 @@
+{% extends 'base.html' %}
+{% block title %}Recepción de Mercadería{% endblock %}
+{% block extra_css %}
+<style>
+  .scanner-box {
+    background: linear-gradient(135deg,#f0f4ff,#f8f9fb);
+    border: 2px dashed #2563eb;
+    border-radius: 16px;
+    padding: 28px 24px;
+  }
+  .scanner-input {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: 2px solid #2563eb;
+    border-radius: 10px;
+    padding: 12px 18px;
+    text-align: center;
+  }
+  .scanner-input:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    outline: none;
+  }
+  .product-found {
+    background: #f0fdf4;
+    border: 2px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    display: none;
+  }
+  .product-found.show { display: flex; gap: 14px; align-items: center; }
+  .product-found img { width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0; }
+  .product-found .placeholder-img {
+    width:60px;height:60px;background:#e0f2fe;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;color:#0284c7;flex-shrink:0;
+  }
+  .reception-item {
+    background: #fff;
+    border: 1px solid #eef0f4;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: box-shadow .15s;
+  }
+  .reception-item:hover { box-shadow: 0 3px 12px rgba(0,0,0,.07); }
+  .item-qty-input { width: 80px; text-align: center; font-weight: 700; font-size: 16px; }
+  .item-cost-input { width: 110px; font-size: 13px; }
+  .badge-reception { background:#dcfce7;color:#16a34a;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px; }
+  .total-bar { background: linear-gradient(90deg,#1a2035,#2563eb); color:#fff; border-radius: 12px; padding: 16px 20px; }
+  #scannerFeedback { min-height: 28px; font-size: 14px; font-weight: 600; }
+  .camera-btn { cursor:pointer; }
+
+  /* Resultado aplicado */
+  .result-card { background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:20px;display:none; }
+  .result-card.show { display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-1">
+  <div>
+    <h1 class="page-title"><i class="bi bi-box-arrow-in-down text-accent"></i> Recepción de Mercadería</h1>
+    <div class="page-subtitle">Escaneá o ingresá el SKU para agregar productos al inventario</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('inventory.movements') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-clock-history me-1"></i>Historial
+    </a>
+    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-box-seam me-1"></i>Inventario
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- ── Columna izquierda: escáner ── -->
+  <div class="col-lg-5">
+
+    <!-- Caja de escaneo -->
+    <div class="scanner-box mb-3">
+      <div class="text-center mb-3">
+        <i class="bi bi-upc-scan" style="font-size:32px;color:#2563eb;"></i>
+        <div class="fw-700 mt-1" style="font-size:15px;">Escaneá o escribí el SKU</div>
+        <div class="text-muted" style="font-size:12px;">Pistola lectora, cámara o teclado</div>
+      </div>
+      <input type="text"
+             id="skuInput"
+             class="form-control scanner-input w-100"
+             placeholder="Ej: GRI001"
+             autocomplete="off"
+             autofocus>
+      <div id="scannerFeedback" class="text-center mt-2"></div>
+
+      <!-- Resultado de búsqueda -->
+      <div class="product-found" id="productFound">
+        <div id="productImg">
+          <div class="placeholder-img"><i class="bi bi-droplet-half"></i></div>
+        </div>
+        <div class="flex-fill">
+          <div id="productName" class="fw-700" style="font-size:14px;"></div>
+          <div id="productSku" class="text-muted" style="font-size:12px;"></div>
+          <div id="productStock" style="font-size:12px;"></div>
+        </div>
+        <div class="text-end" style="flex-shrink:0;">
+          <div id="productPrice" class="fw-700 text-accent" style="font-size:15px;"></div>
+          <button class="btn btn-success btn-sm mt-1" onclick="addFoundProduct()">
+            <i class="bi bi-plus-lg"></i> Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nota y proveedor -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="mb-2">
+          <label class="form-label fw-600" style="font-size:13px;">Proveedor (opcional)</label>
+          <select id="supplierSelect" class="form-select form-select-sm">
+            <option value="">— Sin proveedor —</option>
+            {% for s in suppliers %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label fw-600" style="font-size:13px;">Nota / Remito N°</label>
+          <input type="text" id="receptionNote" class="form-control form-control-sm"
+                 placeholder="Ej: Remito 0001-00012345, Compra directa…">
+        </div>
+      </div>
+    </div>
+
+    <!-- Instrucciones de uso con cámara -->
+    <div class="card">
+      <div class="card-body py-3">
+        <div class="fw-600 mb-2" style="font-size:13px;"><i class="bi bi-info-circle text-accent me-1"></i> Cómo usar con el celular</div>
+        <ol style="font-size:12px;color:#555;padding-left:16px;margin-bottom:0;">
+          <li>Abrí esta pantalla en el celular.</li>
+          <li>Hacé clic en <strong>"Escanear con cámara"</strong> abajo.</li>
+          <li>Apuntá la cámara al código de barras o QR de la etiqueta.</li>
+          <li>El producto se agrega automáticamente.</li>
+          <li>También podés usar una <strong>pistola lectora USB</strong> — escribe el SKU y Enter.</li>
+        </ol>
+        <button class="btn btn-outline-primary btn-sm w-100 mt-3" onclick="startCamera()">
+          <i class="bi bi-camera me-1"></i> Escanear con cámara
+        </button>
+        <div id="cameraContainer" style="display:none;margin-top:12px;">
+          <video id="cameraPreview" style="width:100%;border-radius:8px;background:#000;" autoplay playsinline></video>
+          <button class="btn btn-outline-danger btn-sm w-100 mt-2" onclick="stopCamera()">
+            <i class="bi bi-x-circle me-1"></i> Cerrar cámara
+          </button>
+          <div id="cameraStatus" class="text-center text-muted mt-1" style="font-size:12px;">Apuntá al código de barras o QR…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Columna derecha: lista de ítems ── -->
+  <div class="col-lg-7">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-700" style="font-size:15px;">
+        <i class="bi bi-list-check text-accent me-1"></i>
+        Ítems a ingresar
+        <span id="itemCount" class="badge bg-primary ms-1">0</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" onclick="clearAll()" id="clearBtn" style="display:none;">
+        <i class="bi bi-trash me-1"></i>Limpiar todo
+      </button>
+    </div>
+
+    <div id="itemsList">
+      <div id="emptyMsg" class="empty-state py-5">
+        <i class="bi bi-box-arrow-in-down"></i>
+        <p>Escaneá un producto para comenzar</p>
+      </div>
+    </div>
+
+    <!-- Totales y acción -->
+    <div id="actionsBar" style="display:none;">
+      <div class="total-bar mb-3">
+        <div class="row g-2 text-center">
+          <div class="col-4">
+            <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Productos</div>
+            <div id="totalProds" style="font-size:22px;font-weight:800;">0</div>
+          </div>
+          <div class="col-4">
+            <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Unidades</div>
+            <div id="totalUnits" style="font-size:22px;font-weight:800;">0</div>
+          </div>
+          <div class="col-4">
+            <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Costo Total</div>
+            <div id="totalCost" style="font-size:22px;font-weight:800;">$0</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-success w-100 py-3" style="font-size:16px;font-weight:700;" onclick="applyReception()">
+        <i class="bi bi-check-circle me-2"></i>Confirmar Ingreso de Mercadería
+      </button>
+    </div>
+
+    <!-- Resultado -->
+    <div id="resultCard" class="result-card mt-3">
+      <div class="fw-700 text-success mb-2" style="font-size:16px;">
+        <i class="bi bi-check-circle-fill me-1"></i> ¡Ingreso registrado exitosamente!
+      </div>
+      <div id="resultBody" style="font-size:13px;"></div>
+      <button class="btn btn-primary btn-sm mt-3" onclick="newReception()">
+        <i class="bi bi-plus-circle me-1"></i>Nueva Recepción
+      </button>
+      <a href="{{ url_for('inventory.movements') }}" class="btn btn-outline-secondary btn-sm mt-3 ms-2">
+        <i class="bi bi-clock-history me-1"></i>Ver Historial
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Estado ────────────────────────────────────────────────────────────────────
+let items = [];      // [{id, sku, name, brand, stock, price, cost, qty, newCost, image}]
+let foundProduct = null;
+let cameraStream  = null;
+let barcodeDetector = null;
+
+// ── Búsqueda por SKU ──────────────────────────────────────────────────────────
+const skuInput = document.getElementById('skuInput');
+skuInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    searchSku(skuInput.value.trim());
+  }
+});
+
+// También dispara cuando la pistola lectora escribe rápido y para (debounce)
+let debounceTimer;
+skuInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  const val = skuInput.value.trim();
+  if (val.length >= 3) {
+    debounceTimer = setTimeout(() => searchSku(val), 400);
+  }
+});
+
+function setFeedback(msg, type='muted') {
+  const el = document.getElementById('scannerFeedback');
+  el.innerHTML = msg;
+  el.className = `text-center mt-2 text-${type}`;
+}
+
+async function searchSku(sku) {
+  if (!sku) return;
+  setFeedback('<i class="bi bi-hourglass-split me-1"></i>Buscando…', 'muted');
+  document.getElementById('productFound').classList.remove('show');
+
+  try {
+    const res = await fetch(`/inventario/api/buscar-sku?sku=${encodeURIComponent(sku)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      setFeedback(`<i class="bi bi-exclamation-triangle me-1"></i>${data.error}`, 'danger');
+      foundProduct = null;
+      return;
+    }
+    foundProduct = data;
+    showFoundProduct(data);
+    setFeedback(`<i class="bi bi-check-circle me-1"></i>Producto encontrado`, 'success');
+  } catch(e) {
+    setFeedback('<i class="bi bi-wifi-off me-1"></i>Error de conexión', 'danger');
+  }
+}
+
+function showFoundProduct(p) {
+  document.getElementById('productName').textContent = p.name;
+  document.getElementById('productSku').textContent  = `${p.sku}${p.brand ? ' · ' + p.brand : ''}`;
+  document.getElementById('productStock').innerHTML  =
+    `<span class="text-muted">Stock actual: <strong>${p.stock}</strong> uds.</span>`;
+  document.getElementById('productPrice').textContent = '$' + p.price.toLocaleString('es-AR');
+
+  const imgDiv = document.getElementById('productImg');
+  if (p.image) {
+    imgDiv.innerHTML = `<img src="${p.image}" alt="">`;
+  } else {
+    imgDiv.innerHTML = `<div class="placeholder-img"><i class="bi bi-droplet-half"></i></div>`;
+  }
+  document.getElementById('productFound').classList.add('show');
+}
+
+function addFoundProduct() {
+  if (!foundProduct) return;
+  addItem(foundProduct);
+  skuInput.value = '';
+  skuInput.focus();
+  document.getElementById('productFound').classList.remove('show');
+  setFeedback('');
+  foundProduct = null;
+}
+
+function addItem(p) {
+  // Si ya está en la lista, incrementar cantidad
+  const existing = items.find(i => i.id === p.id);
+  if (existing) {
+    existing.qty++;
+    renderItems();
+    return;
+  }
+  items.push({
+    id:      p.id,
+    sku:     p.sku,
+    name:    p.name,
+    brand:   p.brand,
+    stock:   p.stock,
+    price:   p.price,
+    cost:    p.cost,
+    newCost: p.cost,
+    qty:     1,
+    image:   p.image,
+  });
+  renderItems();
+}
+
+// ── Renderizar lista ──────────────────────────────────────────────────────────
+function renderItems() {
+  const list = document.getElementById('itemsList');
+  document.getElementById('emptyMsg') && (document.getElementById('emptyMsg').style.display = items.length ? 'none' : '');
+  document.getElementById('itemCount').textContent = items.length;
+  document.getElementById('clearBtn').style.display  = items.length ? '' : 'none';
+  document.getElementById('actionsBar').style.display = items.length ? '' : 'none';
+
+  // Limpiar solo las tarjetas (mantener el emptyMsg)
+  list.querySelectorAll('.reception-item').forEach(el => el.remove());
+
+  let totalUnits = 0, totalCost = 0;
+
+  items.forEach((item, idx) => {
+    totalUnits += item.qty;
+    totalCost  += item.qty * (item.newCost || 0);
+
+    const card = document.createElement('div');
+    card.className = 'reception-item';
+    card.innerHTML = `
+      <div class="d-flex gap-3 align-items-start">
+        ${item.image
+          ? `<img src="${item.image}" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
+          : `<div style="width:52px;height:52px;background:#e8f4ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;"><i class="bi bi-droplet-half"></i></div>`
+        }
+        <div class="flex-fill">
+          <div class="fw-700" style="font-size:14px;">${item.name}</div>
+          <div style="font-size:11px;color:#8a94a6;">${item.sku}${item.brand ? ' · ' + item.brand : ''}</div>
+          <div style="font-size:11px;color:#2563eb;margin-top:2px;">Stock actual: ${item.stock} uds.</div>
+          <div class="d-flex gap-2 mt-2 align-items-center flex-wrap">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:#8a94a6;margin-bottom:2px;">CANT. A INGRESAR</div>
+              <div class="d-flex align-items-center gap-1">
+                <button class="btn btn-outline-secondary btn-sm px-2 py-0" onclick="changeQty(${idx},-1)" style="font-size:16px;line-height:1;">−</button>
+                <input type="number" class="form-control item-qty-input"
+                       value="${item.qty}" min="1"
+                       onchange="setQty(${idx}, this.value)">
+                <button class="btn btn-outline-secondary btn-sm px-2 py-0" onclick="changeQty(${idx},1)" style="font-size:16px;line-height:1;">+</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:#8a94a6;margin-bottom:2px;">COSTO UNITARIO $</div>
+              <input type="number" class="form-control item-cost-input"
+                     value="${item.newCost || ''}"
+                     placeholder="${item.cost || '0'}"
+                     onchange="setCost(${idx}, this.value)"
+                     min="0" step="100">
+            </div>
+            <div class="ms-auto text-end">
+              <div style="font-size:10px;font-weight:600;color:#8a94a6;">SUBTOTAL COSTO</div>
+              <div id="subtotal_${idx}" class="fw-700 text-accent" style="font-size:15px;">
+                $${(item.qty * (item.newCost || 0)).toLocaleString('es-AR')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" onclick="removeItem(${idx})" style="flex-shrink:0;padding:4px 8px;">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  document.getElementById('totalProds').textContent = items.length;
+  document.getElementById('totalUnits').textContent = totalUnits;
+  document.getElementById('totalCost').textContent  = '$' + totalCost.toLocaleString('es-AR');
+}
+
+function changeQty(idx, delta) {
+  items[idx].qty = Math.max(1, (items[idx].qty || 1) + delta);
+  renderItems();
+}
+function setQty(idx, val) {
+  items[idx].qty = Math.max(1, parseInt(val) || 1);
+  renderItems();
+}
+function setCost(idx, val) {
+  items[idx].newCost = parseFloat(val) || 0;
+  renderItems();
+}
+function removeItem(idx) {
+  items.splice(idx, 1);
+  renderItems();
+}
+function clearAll() {
+  items = [];
+  renderItems();
+  document.getElementById('emptyMsg').style.display = '';
+}
+
+// ── Confirmar ingreso ─────────────────────────────────────────────────────────
+async function applyReception() {
+  if (!items.length) return;
+  const btn = document.querySelector('[onclick="applyReception()"]');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Procesando…';
+
+  const payload = {
+    items:       items.map(i => ({ id: i.id, qty: i.qty, cost: i.newCost })),
+    note:        document.getElementById('receptionNote').value.trim() || 'Recepción de mercadería',
+    supplier_id: document.getElementById('supplierSelect').value || null,
+  };
+
+  try {
+    const res  = await fetch('/inventario/recepcion/aplicar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error del servidor');
+
+    // Mostrar resultado
+    let html = `<strong>${data.updated}</strong> producto${data.updated !== 1 ? 's' : ''} actualizado${data.updated !== 1 ? 's' : ''}:<br><br>`;
+    data.items.forEach(it => {
+      html += `<div style="padding:4px 0;border-bottom:1px solid #e0f5e9;">
+        <strong>${it.sku}</strong> — ${it.name}
+        <span class="float-end badge-reception">+${it.qty} → stock: ${it.stock_after}</span>
+      </div>`;
+    });
+    document.getElementById('resultBody').innerHTML = html;
+    document.getElementById('resultCard').classList.add('show');
+    document.getElementById('actionsBar').style.display = 'none';
+    clearAll();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirmar Ingreso de Mercadería';
+  }
+}
+
+function newReception() {
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('receptionNote').value = '';
+  skuInput.focus();
+}
+
+// ── Cámara (barcode + QR via BarcodeDetector API) ─────────────────────────────
+async function startCamera() {
+  const container = document.getElementById('cameraContainer');
+  const video     = document.getElementById('cameraPreview');
+  const status    = document.getElementById('cameraStatus');
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 } }
+    });
+    video.srcObject = cameraStream;
+    container.style.display = 'block';
+
+    // Intentar usar BarcodeDetector (Chrome/Android)
+    if ('BarcodeDetector' in window) {
+      barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'qr_code', 'ean_13', 'code_39'] });
+      status.textContent = 'Cámara activa — apuntá al código…';
+      scanFrame(video, status);
+    } else {
+      status.innerHTML = '<i class="bi bi-exclamation-triangle text-warning me-1"></i>Tu navegador no soporta escaneo automático. Escribí el SKU manualmente arriba.';
+    }
+  } catch(e) {
+    status.innerHTML = '<i class="bi bi-x-circle text-danger me-1"></i>No se pudo acceder a la cámara: ' + e.message;
+  }
+}
+
+let scanCooldown = false;
+async function scanFrame(video, status) {
+  if (!cameraStream) return;
+  if (barcodeDetector && !scanCooldown) {
+    try {
+      const codes = await barcodeDetector.detect(video);
+      if (codes.length > 0) {
+        const raw = codes[0].rawValue;
+        // Si es una URL (QR del sistema), extraer el último segmento (ID)
+        let sku = raw;
+        if (raw.startsWith('http')) {
+          // QR del sistema — navegar directo o extraer ID
+          const parts = raw.split('/');
+          const pid = parseInt(parts[parts.length - 1]);
+          if (!isNaN(pid)) {
+            // Buscar por id via URL
+            sku = null;
+            status.innerHTML = `<i class="bi bi-check-circle text-success me-1"></i>QR detectado — abriendo producto…`;
+            scanCooldown = true;
+            setTimeout(() => { window.location.href = raw; }, 800);
+          }
+        }
+        if (sku) {
+          status.innerHTML = `<i class="bi bi-check-circle text-success me-1"></i>Código: <strong>${sku}</strong>`;
+          skuInput.value = sku;
+          scanCooldown = true;
+          await searchSku(sku);
+          setTimeout(() => {
+            if (foundProduct) addFoundProduct();
+            scanCooldown = false;
+            status.textContent = 'Apuntá al siguiente código…';
+          }, 1500);
+        }
+      }
+    } catch(e) {}
+  }
+  requestAnimationFrame(() => scanFrame(video, status));
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  document.getElementById('cameraContainer').style.display = 'none';
+}
+</script>
+{% endblock %}

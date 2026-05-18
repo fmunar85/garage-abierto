@@ -51,6 +51,11 @@
           <i class="bi bi-clipboard-check"></i><span>Recuento Físico</span>
         </a>
       </li>
+      <li class="{% if request.endpoint in ('inventory.reception',) %}active{% endif %}">
+        <a href="{{ url_for('inventory.reception') }}">
+          <i class="bi bi-box-arrow-in-down"></i><span>Recepción Mercadería</span>
+        </a>
+      </li>
       <li class="{% if request.endpoint == 'inventory.movements' %}active{% endif %}">
         <a href="{{ url_for('inventory.movements') }}">
           <i class="bi bi-clock-history"></i><span>Movimientos Stock</span>
