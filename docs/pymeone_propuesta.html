@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta Comercial — PymeOne</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #f0f4f8; line-height: 1.7; }
+
+  :root {
+    --navy:  #0a1628;
+    --blue:  #1a5fb4;
+    --teal:  #2ec4a9;
+    --teal2: #1aa892;
+    --light: #f0f7ff;
+    --border:#dde6f0;
+    --text:  #2d3748;
+    --muted: #718096;
+  }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(140deg, var(--navy) 0%, #0d1f3c 55%, #0e2a4e 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 52px 50px;
+    margin-bottom: 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; top: -100px; right: -80px;
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(46,196,169,.2) 0%, transparent 65%);
+  }
+  .cover::after {
+    content: '';
+    position: absolute; bottom: -100px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(26,95,180,.15) 0%, transparent 65%);
+  }
+  .cover-top { display:flex; align-items:center; gap:20px; margin-bottom:32px; }
+  .cover-brand .bname { font-size:1.9rem; font-weight:900; line-height:1; }
+  .cover-brand .bname .py  { color:#fff; }
+  .cover-brand .bname .one { color:var(--teal); }
+  .cover-brand .btag { font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.4); margin-top:4px; }
+  .cover-eyebrow { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--teal); margin-bottom:16px; }
+  .cover h1 { font-size:2.8rem; font-weight:900; line-height:1.05; margin-bottom:14px; }
+  .cover h1 .hl { color:var(--teal); }
+  .cover .tagline { font-size:1rem; color:rgba(255,255,255,.55); max-width:560px; margin-bottom:36px; }
+  .cover-divider { width:56px; height:3px; background:linear-gradient(90deg,var(--teal),transparent); margin:24px 0; }
+  .cover-chips { display:flex; gap:10px; flex-wrap:wrap; }
+  .cover-chips span { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); padding:5px 14px; border-radius:20px; font-size:12px; color:rgba(255,255,255,.6); }
+
+  /* ── SEC ── */
+  .sec { background:#fff; border-radius:14px; border:1px solid var(--border); margin-bottom:24px; overflow:hidden; }
+  .sec-head { display:flex; align-items:center; gap:14px; padding:20px 26px; background:linear-gradient(90deg,#f5f8fd,#fff); border-bottom:1px solid var(--border); }
+  .sec-icon { width:46px; height:46px; border-radius:11px; background:linear-gradient(135deg,var(--navy),var(--blue)); display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
+  .sec-head h2 { font-size:1.15rem; font-weight:800; color:var(--navy); }
+  .sec-head .sh-sub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .sec-body { padding:24px 26px; }
+
+  /* ── PAIN GRID ── */
+  .pgrid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .pcard { background:#fff5f5; border:1px solid #fed7d7; border-radius:10px; padding:16px 18px; display:flex; gap:12px; }
+  .pcard .pi { font-size:22px; flex-shrink:0; margin-top:1px; }
+  .pcard .pt { font-weight:700; font-size:13.5px; color:#c53030; }
+  .pcard .pd { font-size:12.5px; color:#744210; margin-top:3px; }
+
+  /* ── SOL GRID ── */
+  .sgrid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .scard { background:#e8fdf5; border:1px solid #9ce3d0; border-radius:10px; padding:16px 18px; display:flex; gap:12px; }
+  .scard .si { font-size:22px; flex-shrink:0; margin-top:1px; }
+  .scard .st { font-weight:700; font-size:13.5px; color:#1a5e4a; }
+  .scard .sd { font-size:12.5px; color:#276749; margin-top:3px; }
+
+  /* ── FEATURE ROWS ── */
+  .fr { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #f0f5fa; align-items:flex-start; }
+  .fr:last-child { border-bottom:none; }
+  .fi { width:40px; height:40px; background:linear-gradient(135deg,var(--navy),var(--blue)); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .ft { font-weight:700; font-size:14px; color:var(--navy); }
+  .fd { font-size:13px; color:var(--text); margin-top:3px; }
+  .fbadge { margin-left:auto; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; align-self:center; flex-shrink:0; }
+  .be { background:#e8fdf5; border:1px solid #7ed9c0; color:#1a5e4a; }
+  .bs { background:var(--light); border:1px solid #90bef5; color:#1a3d7a; }
+
+  /* ── PRICE HERO ── */
+  .phero {
+    background:linear-gradient(140deg,var(--navy),#0d2244);
+    border-radius:14px; color:#fff; padding:38px 36px; text-align:center; margin-bottom:22px; position:relative; overflow:hidden;
+  }
+  .phero::before { content:''; position:absolute; top:-50px; left:50%; transform:translateX(-50%); width:350px; height:180px; background:radial-gradient(circle,rgba(46,196,169,.18) 0%,transparent 70%); }
+  .phero .ph-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--teal); margin-bottom:10px; font-weight:700; }
+  .phero .ph-title { font-size:1.4rem; font-weight:800; margin-bottom:8px; }
+  .phero .ph-amt { font-size:3.4rem; font-weight:900; color:var(--teal); line-height:1; margin:14px 0; }
+  .phero .ph-amt sup { font-size:1.6rem; vertical-align:super; }
+  .phero .ph-note { font-size:12.5px; color:rgba(255,255,255,.5); }
+
+  /* ── PRICE TABLE ── */
+  .ptbl { width:100%; border-collapse:collapse; }
+  .ptbl th { background:#f5f8fd; padding:11px 16px; text-align:left; font-size:13px; color:var(--text); font-weight:600; border-bottom:2px solid var(--border); }
+  .ptbl td { padding:11px 16px; border-bottom:1px solid #f0f5fa; font-size:13.5px; color:var(--text); }
+  .ptbl .pc { font-weight:700; color:var(--blue); text-align:right; white-space:nowrap; }
+  .ptbl tfoot td { border-top:2px solid var(--navy); padding-top:14px; font-size:15px; font-weight:700; }
+
+  /* ── PLANS ── */
+  .plans { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:22px; }
+  .plan { border-radius:12px; border:2px solid var(--border); padding:24px 20px; text-align:center; position:relative; }
+  .plan.star { border-color:var(--teal); background:linear-gradient(180deg,#e8fdf5,#fff); }
+  .plan .pbadge { position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--teal); color:var(--navy); font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 14px; border-radius:20px; white-space:nowrap; }
+  .plan .pname { font-size:1rem; font-weight:800; color:var(--navy); margin-bottom:6px; }
+  .plan .pprice { font-size:2rem; font-weight:900; color:var(--blue); line-height:1.1; margin:12px 0 4px; }
+  .plan .pperiod { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .plan ul { list-style:none; text-align:left; padding:0; font-size:13px; color:var(--text); }
+  .plan ul li { padding:5px 0; display:flex; gap:8px; border-bottom:1px solid #f0f5fa; }
+  .plan ul li:last-child { border-bottom:none; }
+  .plan ul li::before { content:'✓'; color:var(--teal); font-weight:700; flex-shrink:0; }
+
+  /* ── VS TABLE ── */
+  .vt { width:100%; border-collapse:collapse; }
+  .vt th { padding:12px 16px; text-align:center; font-size:13px; font-weight:700; border-bottom:2px solid var(--border); }
+  .vt th:first-child { text-align:left; }
+  .vt td { padding:10px 16px; border-bottom:1px solid #f0f5fa; font-size:13px; text-align:center; }
+  .vt td:first-child { text-align:left; font-weight:500; color:var(--text); }
+  .vt .col-p { background:#e8fdf5; }
+  .vt tr:hover td { background:#fafafa; }
+  .vt tr:hover td.col-p { background:#dcfaef; }
+  .ck { color:var(--teal2); font-weight:800; font-size:15px; }
+  .cr { color:#e05260; font-weight:800; font-size:15px; }
+  .cp { color:#d08000; font-weight:700; }
+
+  /* ── ROI ── */
+  .roi { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .rc { background:linear-gradient(180deg,#f5f8fd,#fff); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center; }
+  .rc .ri { font-size:28px; margin-bottom:8px; }
+  .rc .rn { font-size:1.7rem; font-weight:900; color:var(--blue); }
+  .rc .rl { font-size:11px; color:var(--muted); margin-top:4px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  .rc .rd { font-size:12.5px; color:var(--text); margin-top:6px; }
+
+  /* ── TIMELINE ── */
+  .tline { display:flex; flex-direction:column; gap:0; }
+  .tstep { display:flex; gap:20px; padding:16px 0; border-bottom:1px solid #f0f5fa; align-items:flex-start; }
+  .tstep:last-child { border-bottom:none; }
+  .tnum { width:36px; height:36px; background:linear-gradient(135deg,var(--teal),var(--teal2)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:var(--navy); font-size:15px; flex-shrink:0; }
+  .ttitle { font-weight:700; color:var(--navy); font-size:14px; }
+  .tdesc { font-size:13.5px; color:var(--text); margin-top:3px; }
+  .tday { margin-left:auto; font-size:11.5px; color:var(--muted); white-space:nowrap; padding-top:3px; }
+
+  /* ── QUOTE ── */
+  .quote { background:linear-gradient(135deg,#f0f7ff,#e8fdf5); border-left:4px solid var(--teal); border-radius:0 10px 10px 0; padding:18px 22px; margin:16px 0; font-style:italic; color:var(--text); font-size:14px; }
+  .quote .qa { font-style:normal; font-weight:700; font-size:12.5px; color:var(--blue); margin-top:10px; }
+
+  /* ── FAQ ── */
+  .faq-item { border-bottom:1px solid #f0f5fa; padding-bottom:14px; margin-bottom:14px; }
+  .faq-item:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .faq-q { font-weight:700; color:var(--blue); margin-bottom:5px; font-size:14px; }
+  .faq-a { font-size:13.5px; color:var(--text); }
+
+  /* ── CTA ── */
+  .cta { background:linear-gradient(135deg,var(--teal),var(--teal2)); border-radius:16px; padding:38px 36px; text-align:center; margin-top:10px; }
+  .cta h2 { font-size:1.65rem; font-weight:900; color:var(--navy); margin-bottom:12px; }
+  .cta p { font-size:14px; color:rgba(0,50,40,.65); max-width:500px; margin:0 auto 22px; }
+  .cta-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn-dark { display:inline-block; background:var(--navy); color:#fff; font-weight:700; font-size:14px; padding:13px 28px; border-radius:10px; text-decoration:none; }
+  .btn-white { display:inline-block; background:#fff; color:var(--navy); font-weight:700; font-size:14px; padding:13px 28px; border-radius:10px; text-decoration:none; border:2px solid var(--navy); }
+
+  /* ── FOOTER ── */
+  .footer { text-align:center; padding:28px 0 8px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); margin-top:40px; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background:#fff; font-size:12px; }
+    .wrap { padding:0; max-width:100%; }
+    .cover { border-radius:0; page-break-after:always; }
+    .sec, .cta { page-break-inside:avoid; }
+    a { color:inherit; text-decoration:none; }
+    .plans { grid-template-columns:repeat(3,1fr); }
+    .roi { grid-template-columns:repeat(3,1fr); }
+  }
+  @page { margin:18mm 14mm; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ COVER ══ -->
+<div class="cover">
+  <div class="cover-top">
+    <svg width="80" height="80" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="96" fill="#0a1628" stroke="rgba(255,255,255,0.07)" stroke-width="2"/>
+      <path d="M 100 20 A 80 80 0 0 1 170 155" stroke="#2ec4a9" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <path d="M 170 155 A 80 80 0 0 1 38 148" stroke="#1a5fb4" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <path d="M 38 148 A 80 80 0 0 1 100 20" stroke="#1a3a6e" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="14" fill="white"/>
+      <line x1="100" y1="100" x2="52"  y2="82"  stroke="#1a5fb4" stroke-width="6" stroke-linecap="round"/>
+      <line x1="100" y1="100" x2="100" y2="20"  stroke="#2ec4a9" stroke-width="6" stroke-linecap="round"/>
+      <line x1="100" y1="100" x2="163" y2="62"  stroke="#2ec4a9" stroke-width="6" stroke-linecap="round"/>
+      <line x1="100" y1="100" x2="115" y2="170" stroke="white"   stroke-width="6" stroke-linecap="round"/>
+      <circle cx="52"  cy="82"  r="10" fill="#1a5fb4"/>
+      <circle cx="100" cy="20"  r="10" fill="#2ec4a9"/>
+      <circle cx="163" cy="62"  r="10" fill="#2ec4a9"/>
+      <circle cx="115" cy="170" r="10" fill="white"/>
+    </svg>
+    <div class="cover-brand">
+      <div class="bname"><span class="py">Pyme</span><span class="one">One</span></div>
+      <div class="btag">Sistema de Gestión Integral</div>
+    </div>
+  </div>
+  <div class="cover-eyebrow">✦ Propuesta Comercial · Mayo 2026</div>
+  <h1>El sistema que<br>tu negocio <span class="hl">necesita.</span></h1>
+  <p class="tagline">Control total de ventas, stock, clientes y empleados en una sola plataforma web — diseñada para PyMEs argentinas de cualquier rubro que quieren crecer con datos, no con intuición.</p>
+  <div class="cover-divider"></div>
+  <div class="cover-chips">
+    <span>🏪 Comercios minoristas</span>
+    <span>🔧 Ferreterías y repuestos</span>
+    <span>👗 Indumentaria</span>
+    <span>🛒 Distribuidoras</span>
+    <span>📦 Depósitos y mayoristas</span>
+    <span>🍕 Gastronomía</span>
+    <span>💊 Farmacias y perfumerías</span>
+    <span>🐾 Veterinarias y pet shops</span>
+  </div>
+</div>
+
+
+<!-- PROBLEMA -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">😤</div>
+    <div>
+      <h2>¿Te suena familiar alguna de estas situaciones?</h2>
+      <div class="sh-sub">Los problemas que le cuestan plata a tu negocio todos los días</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="pgrid">
+      <div class="pcard"><span class="pi">📋</span><div><div class="pt">El inventario es un caos</div><div class="pd">No sabés cuánto tenés, te quedás sin stock sin darte cuenta, o pagás por mercadería que ya tenés.</div></div></div>
+      <div class="pcard"><span class="pi">🧾</span><div><div class="pt">Ventas en papel o Excel</div><div class="pd">Cuadernos que se pierden, errores de suma y al cierre del mes no sabés exactamente cuánto ganaste.</div></div></div>
+      <div class="pcard"><span class="pi">🔍</span><div><div class="pt">Sin trazabilidad</div><div class="pd">Un cliente pide garantía y no podés saber qué vendiste, cuándo, ni de qué partida era.</div></div></div>
+      <div class="pcard"><span class="pi">📊</span><div><div class="pt">Cero datos para decidir</div><div class="pd">¿Tu producto más rentable? ¿Tu margen real? ¿Cuánto más vendiste que el mes pasado? Hoy, no lo sabés.</div></div></div>
+      <div class="pcard"><span class="pi">👁️</span><div><div class="pt">El equipo pierde tiempo</div><div class="pd">Buscar precios en papeles, llamar al encargado, no poder responder rápido. Cada demora, una venta en riesgo.</div></div></div>
+      <div class="pcard"><span class="pi">💸</span><div><div class="pt">Sistemas caros e inútiles</div><div class="pd">O pagás en dólares por algo que no usás ni la mitad, o usás herramientas genéricas que no se adaptan.</div></div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SOLUCIÓN -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">✅</div>
+    <div>
+      <h2>PymeOne resuelve todo eso.</h2>
+      <div class="sh-sub">Un sistema web completo, en la nube, sin instalación, sin IT</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="sgrid">
+      <div class="scard"><span class="si">📦</span><div><div class="st">Stock siempre real</div><div class="sd">Cada venta descuenta el stock en tiempo real. Alertas cuando llegás al mínimo.</div></div></div>
+      <div class="scard"><span class="si">💰</span><div><div class="st">Ventas en segundos</div><div class="sd">Buscás, agregás, aplicás descuento y confirmás. Todo en menos de un minuto.</div></div></div>
+      <div class="scard"><span class="si">📈</span><div><div class="st">Dashboard gerencial real</div><div class="sd">Ingresos, margen bruto, ticket promedio, top productos, variación mensual. Datos para decidir.</div></div></div>
+      <div class="scard"><span class="si">🏷️</span><div><div class="st">Trazabilidad por unidad</div><div class="sd">Cada pieza tiene su barcode único. Sabés exactamente qué vendiste, cuándo y de qué partida.</div></div></div>
+      <div class="scard"><span class="si">🖥️</span><div><div class="st">Display para el cliente</div><div class="sd">Catálogo con precios en tiempo real en TV o monitor del mostrador.</div></div></div>
+      <div class="scard"><span class="si">☁️</span><div><div class="st">100% en la nube</div><div class="sd">Desde cualquier dispositivo con internet. Sin servidores propios, sin mantenimiento de IT.</div></div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- QUÉ INCLUYE -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">🧩</div>
+    <div>
+      <h2>Todo lo que incluye PymeOne</h2>
+      <div class="sh-sub">Módulos completos, listos desde el día uno</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="fr"><div class="fi">📊</div><div><div class="ft">Dashboard KPI con gráficos</div><div class="fd">Ventas del día y del mes, comparativa mensual, ticket promedio, margen bruto estimado, top 8 productos, alertas de stock. Gráficos diario (30 días) y mensual (6 meses).</div></div><span class="fbadge be">⭐ Premium</span></div>
+    <div class="fr"><div class="fi">📦</div><div><div class="ft">Gestión de Inventario completa</div><div class="fd">Alta, edición y baja de productos con SKU, imagen en nube, marca, categoría, proveedor, precio de venta, costo, stock y stock mínimo. Filtros y buscador en tiempo real.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">🏷️</div><div><div class="ft">Sistema de barcodes por unidad física</div><div class="fd">Códigos únicos CODE128 de 16 dígitos por cada unidad recibida. Estructura: categoría + proveedor + producto + secuencia global. Imprimibles desde el navegador.</div></div><span class="fbadge be">⭐ Premium</span></div>
+    <div class="fr"><div class="fi">💰</div><div><div class="ft">Punto de Venta (POS)</div><div class="fd">Búsqueda por nombre, SKU, marca o scanner. Carrito, descuentos, múltiples métodos de pago, vinculación de cliente. Descuento automático de stock al confirmar.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">🧾</div><div><div class="ft">Historial y comprobantes</div><div class="fd">Filtros por estado, método de pago y fechas. Detalle de cada venta. Factura imprimible. Cancelación con restauración automática de stock.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">👥</div><div><div class="ft">Base de clientes</div><div class="fd">CRUD completo con historial de compras. Vinculación de ventas para seguimiento personalizado.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">🏭</div><div><div class="ft">Proveedores</div><div class="fd">Base de datos vinculada a productos y barcodes. Datos de contacto, CUIT y condiciones comerciales.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">🖥️</div><div><div class="ft">Pantalla de exhibición para clientes</div><div class="fd">Display web con catálogo, precios en tiempo real y ticker animado de destacados. Para TV o monitor del mostrador.</div></div><span class="fbadge be">⭐ Premium</span></div>
+    <div class="fr"><div class="fi">🔐</div><div><div class="ft">Roles y usuarios múltiples</div><div class="fd">Admin (acceso total) y Vendedor (ventas e inventario). Usuarios ilimitados sin costo extra.</div></div><span class="fbadge bs">Incluido</span></div>
+    <div class="fr"><div class="fi">🏦</div><div><div class="ft">Promociones bancarias</div><div class="fd">Cargá cuotas sin interés y descuentos vigentes para que el equipo los tenga siempre visibles.</div></div><span class="fbadge bs">Incluido</span></div>
+  </div>
+</div>
+
+
+<!-- INVERSIÓN INICIAL -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">💎</div>
+    <div>
+      <h2>Inversión inicial — Pago único</h2>
+      <div class="sh-sub">Todo lo que se desarrolla una sola vez para poner PymeOne en marcha</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <table class="ptbl">
+      <thead>
+        <tr><th>Concepto</th><th>Descripción</th><th style="text-align:right;">Precio</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>🧩 Licencia del sistema base</strong></td><td>Plataforma completa con todos los módulos: ventas, inventario, clientes, barcodes, display, dashboard, usuarios.</td><td class="pc">$1.960.000</td></tr>
+        <tr><td><strong>⚙️ Puesta en marcha</strong></td><td>Setup en Railway (nube), base de datos, dominio personalizado, carga de categorías y proveedores iniciales.</td><td class="pc">$560.000</td></tr>
+        <tr><td><strong>📥 Migración de datos</strong></td><td>Importación de productos desde Excel u otro sistema. Hasta 500 productos incluidos.</td><td class="pc">$420.000</td></tr>
+        <tr><td><strong>🎓 Capacitación inicial</strong></td><td>2 hs de capacitación presencial o videollamada para todo el equipo. Manual de usuario incluido.</td><td class="pc">$280.000</td></tr>
+        <tr><td><strong>🖼️ Almacenamiento de imágenes en nube</strong></td><td>Configuración de Cloudinary para que las fotos de productos nunca se pierdan.</td><td class="pc">$140.000</td></tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" style="text-align:right;font-weight:700;color:var(--navy);">TOTAL INVERSIÓN INICIAL</td>
+          <td class="pc" style="font-size:1.3rem;color:var(--blue);">$3.360.000 ARS <span style="font-size:.75rem;color:var(--muted);font-weight:400;">≈ USD 2.400</span></td>
+        </tr>
+        <tr>
+          <td colspan="3" style="font-size:12px;color:var(--muted);padding-top:8px;font-weight:400;">Precios en pesos argentinos (TC referencia $1.400/USD). IVA no incluido. Vigencia: 30 días desde la fecha de esta propuesta.</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+
+<!-- MANTENIMIENTO -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">🔄</div>
+    <div>
+      <h2>Planes de mantenimiento mensual</h2>
+      <div class="sh-sub">Elegí el nivel de soporte que mejor se adapta a tu operación</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="plans">
+      <div class="plan">
+        <div class="pname">🥉 Básico</div>
+        <div class="pprice">$150.000</div>
+        <div class="pperiod">por mes &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);">≈ USD 107</span></div>
+        <ul>
+          <li>Hosting en Railway incluido</li>
+          <li>Monitoreo de disponibilidad</li>
+          <li>Backups semanales de BD</li>
+          <li>Soporte por WhatsApp (48 hs)</li>
+          <li>1 ajuste menor por mes</li>
+        </ul>
+      </div>
+      <div class="plan star">
+        <div class="pbadge">⭐ MÁS ELEGIDO</div>
+        <div class="pname">🥇 Profesional</div>
+        <div class="pprice">$250.000</div>
+        <div class="pperiod">por mes &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);">≈ USD 178</span></div>
+        <ul>
+          <li>Todo lo del plan Básico</li>
+          <li>Backups diarios de BD</li>
+          <li>Soporte prioritario (24 hs)</li>
+          <li>Actualizaciones de seguridad</li>
+          <li>3 mejoras/mes (precios, campos)</li>
+          <li>1 funcionalidad nueva por trimestre</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <div class="pname">💼 Premium</div>
+        <div class="pprice" style="font-size:1.7rem;">$400.000</div>
+        <div class="pperiod">primeros 3 meses &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);">≈ USD 285</span></div>
+        <div style="margin:8px 0 12px;padding:7px 12px;background:linear-gradient(90deg,#e8fdf5,#f0fff8);border-radius:8px;border:1px solid #9ce3d0;text-align:center;">
+          <span style="font-size:11px;color:#1a5e4a;font-weight:700;">Luego solo</span>
+          <span style="font-size:1.3rem;font-weight:900;color:var(--blue);margin:0 4px;">$200.000</span>
+          <span style="font-size:11px;color:#1a5e4a;font-weight:700;">/mes</span>
+        </div>
+        <ul>
+          <li>Todo lo del plan Profesional</li>
+          <li>Soporte telefónico ilimitado</li>
+          <li>Desarrollo a medida ilimitado</li>
+          <li>Capacitación mensual del equipo</li>
+          <li>Integraciones (MercadoPago, etc.)</li>
+          <li>SLA de respuesta: 4 horas</li>
+        </ul>
+      </div>
+    </div>
+    <div style="background:#f5f8fd;border-radius:10px;padding:14px 18px;border:1px solid var(--border);font-size:13px;color:var(--text);">
+      <strong style="color:var(--blue);">💡 ¿Qué incluye "Hosting"?</strong> — El costo del servidor en Railway (~$10-15 USD/mes) está contemplado en todos los planes. Sin costos ocultos.
+    </div>
+  </div>
+</div>
+
+
+<!-- VS ALTERNATIVAS -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">⚖️</div>
+    <div>
+      <h2>¿Por qué no usar algo genérico?</h2>
+      <div class="sh-sub">Comparativa honesta con otras alternativas</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <table class="vt">
+      <thead>
+        <tr><th>Funcionalidad</th><th class="col-p">✅ PymeOne</th><th>Excel / Papel</th><th>Sistemas genéricos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Adaptado a tu negocio y rubro</td><td class="col-p"><span class="ck">✓ 100%</span></td><td><span class="cp">~ Parcial</span></td><td><span class="cr">✗ Genérico</span></td></tr>
+        <tr><td>Dashboard con margen bruto real</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cr">✗</span></td><td><span class="cp">~ Costo extra</span></td></tr>
+        <tr><td>Barcode por unidad física</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cr">✗</span></td><td><span class="cr">✗ No existe</span></td></tr>
+        <tr><td>Display de precios para clientes</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cr">✗</span></td><td><span class="cr">✗</span></td></tr>
+        <tr><td>Funciona desde el celular</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cr">✗</span></td><td><span class="cp">~ Depende</span></td></tr>
+        <tr><td>Sin instalación ni IT propio</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cp">~ Parcial</span></td><td><span class="cr">✗ Generalmente no</span></td></tr>
+        <tr><td>Imágenes persistentes en la nube</td><td class="col-p"><span class="ck">✓</span></td><td><span class="cr">✗</span></td><td><span class="cp">~ Costo extra</span></td></tr>
+        <tr><td>Soporte en castellano, local</td><td class="col-p"><span class="ck">✓ Directo</span></td><td><span class="cr">✗</span></td><td><span class="cp">~ Tickets</span></td></tr>
+        <tr><td>Costo mensual razonable</td><td class="col-p"><span class="ck">✓ Desde $35k</span></td><td><span class="ck">✓ Gratis</span></td><td><span class="cr">✗ USD 50-300/mes</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ROI -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">📈</div>
+    <div>
+      <h2>¿Cuánto te cuesta no tenerlo?</h2>
+      <div class="sh-sub">El retorno es más rápido de lo que pensás</div>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="roi" style="margin-bottom:22px;">
+      <div class="rc"><div class="ri">⏱️</div><div class="rn">2 hs/día</div><div class="rl">Tiempo recuperado</div><div class="rd">Menos tiempo buscando precios, contando stock y cerrando caja.</div></div>
+      <div class="rc"><div class="ri">📉</div><div class="rn">−30%</div><div class="rl">Pérdidas de stock</div><div class="rd">Las alertas de mínimo evitan quedarse sin mercadería justo cuando hay demanda.</div></div>
+      <div class="rc"><div class="ri">💡</div><div class="rn">+15%</div><div class="rl">Margen más preciso</div><div class="rd">Conocer costo vs venta real permite tomar decisiones de precio con datos, no con intuición.</div></div>
+    </div>
+    <div class="quote">
+      "Un negocio que factura $500.000 al mes y mejora su margen bruto un 3% con mejores decisiones de precio recupera la inversión del sistema en <strong>menos de 3 meses</strong>. Sin contar el tiempo que le devuelve a su equipo."
+      <div class="qa">— Estimación conservadora basada en comercios similares</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- TIMELINE -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">🚀</div>
+    <div>
+      <h2>Del acuerdo al sistema funcionando en 7 días</h2>
+    </div>
+  </div>
+  <div class="sec-body">
+    <div class="tline">
+      <div class="tstep"><div class="tnum">1</div><div><div class="ttitle">Reunión inicial (1 hora)</div><div class="tdesc">Analizamos tu operación: productos, usuarios, qué tenés hoy, qué necesitás personalizar.</div></div><div class="tday">Día 0</div></div>
+      <div class="tstep"><div class="tnum">2</div><div><div class="ttitle">Configuración y deploy en la nube</div><div class="tdesc">Servidor en Railway, dominio personalizado, base de datos, categorías y proveedores iniciales.</div></div><div class="tday">Días 1-2</div></div>
+      <div class="tstep"><div class="tnum">3</div><div><div class="ttitle">Carga de datos y pruebas</div><div class="tdesc">Importamos tu inventario, creamos usuarios del equipo y validamos ventas y barcodes.</div></div><div class="tday">Días 3-4</div></div>
+      <div class="tstep"><div class="tnum">4</div><div><div class="ttitle">Capacitación y lanzamiento 🎉</div><div class="tdesc">2 horas de capacitación para el equipo. Manual imprimible. El sistema queda operativo 100%. Soporte de seguimiento las primeras dos semanas.</div></div><div class="tday">Días 5-7</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FAQ -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-icon">❓</div>
+    <h2>Preguntas frecuentes</h2>
+  </div>
+  <div class="sec-body">
+    <div class="faq-item">
+      <div class="faq-q">¿Necesito computadora propia para usarlo?</div>
+      <div class="faq-a">No. Funciona desde cualquier dispositivo con internet: PC, notebook, tablet o celular. No requiere instalación ni configuración.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">¿Qué pasa si se va internet?</div>
+      <div class="faq-a">Como todo sistema web requiere conexión. Recomendamos tener una conexión de respaldo (datos móviles) para casos de corte.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">¿Cuántos usuarios puedo tener?</div>
+      <div class="faq-a">Usuarios ilimitados. Podés tener 2 o 20 empleados operando simultáneamente sin costo adicional.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">¿Mis datos están seguros?</div>
+      <div class="faq-a">Sí. La base de datos está en Railway (infraestructura Amazon AWS) con backups automáticos. Las imágenes en Cloudinary con redundancia geográfica. Conexión HTTPS cifrada.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">¿Puedo agregar funcionalidades a medida?</div>
+      <div class="faq-a">Sí. El sistema fue construido modularmente. Podemos agregar integración con MercadoPago, reportes para AFIP, WhatsApp, o cualquier necesidad específica de tu rubro.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">¿Qué pasa si no renuevo el mantenimiento?</div>
+      <div class="faq-a">El sistema sigue funcionando. El mantenimiento no es obligatorio, pero el hosting y backups quedan a tu cargo. Entregamos toda la documentación técnica para que otro desarrollador pueda continuarlo.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Tomá el control de tu negocio hoy.</h2>
+  <p>Cada día sin datos precisos es plata que se escapa. La inversión se recupera en meses. El orden y la claridad son permanentes.</p>
+  <div class="cta-btns">
+    <a class="btn-dark" href="mailto:fabriciomunar@gmail.com?subject=Solicito%20una%20demo%20de%20PymeOne&body=Hola%2C%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20PymeOne.%20Quisiera%20coordinar%20una%20demo%20gratuita.">📞 Quiero una demo gratuita</a>
+    <a class="btn-white" href="https://wa.me/5491150021256?text=Hola%2C%20me%20interesa%20PymeOne.%20Quisiera%20m%C3%A1s%20informaci%C3%B3n." target="_blank">💬 Consultar por WhatsApp</a>
+  </div>
+</div>
+
+
+<div class="footer">
+  <svg width="28" height="28" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:8px;">
+    <circle cx="100" cy="100" r="94" fill="#0a1628"/>
+    <path d="M 100 20 A 80 80 0 0 1 170 155" stroke="#2ec4a9" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M 170 155 A 80 80 0 0 1 38 148" stroke="#1a5fb4" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M 38 148 A 80 80 0 0 1 100 20" stroke="#1a3a6e" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="12" fill="white"/>
+    <line x1="100" y1="100" x2="52" y2="82" stroke="#1a5fb4" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="100" y2="20" stroke="#2ec4a9" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="163" y2="62" stroke="#2ec4a9" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="115" y2="170" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="52" cy="82" r="9" fill="#1a5fb4"/>
+    <circle cx="100" cy="20" r="9" fill="#2ec4a9"/>
+    <circle cx="163" cy="62" r="9" fill="#2ec4a9"/>
+    <circle cx="115" cy="170" r="9" fill="white"/>
+  </svg>
+  <strong>PymeOne</strong> · Sistema de Gestión Integral para PyMEs · Propuesta Comercial · Mayo 2026<br>
+  Precios en pesos argentinos · Vigencia 30 días · Documento confidencial
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>

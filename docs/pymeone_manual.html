@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — PymeOne</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #f0f4f8; line-height: 1.65; }
+
+  /* VARIABLES */
+  :root {
+    --navy:   #0a1628;
+    --blue:   #1a5fb4;
+    --teal:   #2ec4a9;
+    --teal2:  #1aa892;
+    --light:  #f0f7ff;
+    --border: #dde6f0;
+    --text:   #2d3748;
+    --muted:  #718096;
+  }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(140deg, var(--navy) 0%, #0d1f3c 55%, #102a4a 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 52px 50px 46px;
+    margin-bottom: 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; top: -90px; right: -90px;
+    width: 340px; height: 340px;
+    background: radial-gradient(circle, rgba(46,196,169,0.18) 0%, transparent 70%);
+  }
+  .cover::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -50px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(26,95,180,0.15) 0%, transparent 70%);
+  }
+  .cover-top { display: flex; align-items: center; gap: 22px; margin-bottom: 30px; }
+  .cover-logo { flex-shrink: 0; }
+  .cover-brand { display: flex; flex-direction: column; }
+  .cover-brand .brand-name { font-size: 2rem; font-weight: 900; line-height: 1; }
+  .cover-brand .brand-name .pyme { color: #fff; }
+  .cover-brand .brand-name .one  { color: var(--teal); }
+  .cover-brand .brand-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 4px; }
+  .cover h1 { font-size: 2.3rem; font-weight: 800; line-height: 1.1; margin-bottom: 12px; color: #fff; }
+  .cover h1 span { color: var(--teal); }
+  .cover .subtitle { font-size: 1rem; color: rgba(255,255,255,0.55); max-width: 520px; margin-bottom: 28px; }
+  .cover-divider { width: 50px; height: 3px; background: linear-gradient(90deg, var(--teal), transparent); margin: 22px 0; }
+  .cover-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+  .cover-meta-item .label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+  .cover-meta-item .value { font-size: 13.5px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+  /* ── TOC ── */
+  .toc { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 38px; }
+  .toc h2 { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 7px; }
+  .toc a { color: var(--blue); text-decoration: none; font-weight: 500; font-size: 14px; }
+  .toc a:hover { color: var(--teal); }
+  .toc .sub { padding-left: 18px; margin-top: 4px; list-style: none; }
+  .toc .sub li { margin-bottom: 3px; }
+  .toc .sub a { font-size: 13px; color: var(--muted); font-weight: 400; }
+
+  /* ── SECTION ── */
+  .sec { background: #fff; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden; }
+  .sec-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 26px;
+    background: linear-gradient(90deg, #f5f8fd, #fff);
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-icon {
+    width: 44px; height: 44px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .sec-head h2 { font-size: 1.15rem; font-weight: 800; color: var(--navy); }
+  .sec-url {
+    margin-left: auto; font-size: 11px; font-family: 'Courier New', monospace;
+    background: var(--light); color: var(--blue); padding: 3px 10px;
+    border-radius: 6px; border: 1px solid #c3d9f5; white-space: nowrap;
+  }
+  .sec-body { padding: 22px 26px; }
+
+  /* ── ROLE TAGS ── */
+  .rtag { display:inline-block; font-size:11px; font-weight:600; padding:2px 9px; border-radius:20px; margin-left:8px; vertical-align:middle; }
+  .r-admin  { background:#fff0f6; color:#862e5e; border:1px solid #e9a0c2; }
+  .r-seller { background:#e8fdf5; color:#1a7a5e; border:1px solid #7ed9c0; }
+  .r-both   { background:#eef5ff; color:#1a5fb4; border:1px solid #90bef5; }
+
+  /* ── FEATURE LIST ── */
+  .flist { list-style:none; padding:0; }
+  .flist li { display:flex; align-items:flex-start; gap:12px; padding:11px 0; border-bottom:1px solid #f0f5fa; }
+  .flist li:last-child { border-bottom:none; }
+  .fbullet { width:30px; height:30px; background:var(--light); border:1px solid #c3d9f5; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:1px; }
+  .ftitle { font-weight:700; color:var(--navy); font-size:14px; }
+  .fdesc  { font-size:13px; color:var(--text); margin-top:3px; }
+
+  /* ── STEPS ── */
+  .steps { counter-reset:s; list-style:none; padding:0; }
+  .steps li { counter-increment:s; display:flex; gap:14px; margin-bottom:14px; align-items:flex-start; }
+  .steps li::before {
+    content:counter(s);
+    width:30px; height:30px; background:linear-gradient(135deg,var(--blue),var(--navy));
+    color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; flex-shrink:0; margin-top:2px;
+  }
+  .steps .st { font-size:13.5px; color:var(--text); padding-top:5px; }
+  .steps .st strong { color:var(--blue); }
+
+  /* ── CALLOUTS ── */
+  .tip     { background:#e8fdf5; border-left:4px solid var(--teal);  color:#1a5e4a; border-radius:0 8px 8px 0; padding:12px 16px; margin:14px 0; font-size:13.5px; display:flex; gap:10px; }
+  .warning { background:#fff8e6; border-left:4px solid #f0a500;      color:#7a4e00; border-radius:0 8px 8px 0; padding:12px 16px; margin:14px 0; font-size:13.5px; display:flex; gap:10px; }
+  .info    { background:var(--light); border-left:4px solid var(--blue); color:#143d7a; border-radius:0 8px 8px 0; padding:12px 16px; margin:14px 0; font-size:13.5px; display:flex; gap:10px; }
+  .tip .ci, .warning .ci, .info .ci { font-size:17px; flex-shrink:0; margin-top:1px; }
+
+  /* ── TABLES ── */
+  .dt { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .dt th { background:#f5f8fd; color:var(--text); font-weight:600; text-align:left; padding:10px 14px; border-bottom:2px solid var(--border); }
+  .dt td { padding:10px 14px; border-bottom:1px solid #f0f5fa; color:var(--text); }
+  .dt tr:last-child td { border-bottom:none; }
+  .dt tr:hover td { background:#f8fbff; }
+  .mono { font-family:'Courier New',monospace; font-size:12px; background:var(--light); padding:1px 6px; border-radius:4px; color:var(--blue); }
+
+  /* ── KPI GRID ── */
+  .kgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0; }
+  .kcard { background:#f5f8fd; border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+  .kcard .ki { font-size:26px; margin-bottom:6px; }
+  .kcard .kl { font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  .kcard .kd { font-size:12.5px; color:var(--text); margin-top:4px; }
+
+  /* ── BARCODE DEMO ── */
+  .bc-demo {
+    background:var(--light); border-radius:10px; padding:16px; font-family:'Courier New',monospace;
+    font-size:1.05rem; text-align:center; letter-spacing:3px; border:1px solid #c3d9f5; margin:14px 0;
+  }
+  .bc-demo sub { font-size:10px; letter-spacing:.5px; color:var(--muted); display:block; margin-top:6px; }
+
+  /* ── STATUS BADGES ── */
+  .sbadge { display:inline-block; font-size:12px; padding:2px 10px; border-radius:12px; font-weight:600; }
+  .s-avail  { background:#e8fdf5; color:#1a7a5e; border:1px solid #7ed9c0; }
+  .s-sold   { background:#fde8ea; color:#7a1a22; border:1px solid #f5a0a8; }
+  .s-dmg    { background:#fff8e6; color:#7a4e00; border:1px solid #f5d28a; }
+
+  /* ── PERM TABLE ── */
+  .pm-check { color:var(--teal);  font-weight:800; font-size:16px; }
+  .pm-cross { color:#e05260; font-weight:800; font-size:16px; }
+
+  /* ── FOOTER ── */
+  .footer { text-align:center; padding:28px 0 8px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); margin-top:44px; }
+  .footer strong { color:var(--blue); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background:#fff; font-size:13px; }
+    .wrap { padding:0; max-width:100%; }
+    .cover { border-radius:0; page-break-after:always; }
+    .sec { page-break-inside:avoid; }
+    .toc { page-break-after:always; }
+    a { color:inherit; text-decoration:none; }
+    .sec-url { display:none; }
+  }
+  @page { margin:18mm 14mm; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ COVER ══ -->
+<div class="cover">
+  <div class="cover-top">
+    <!-- Logo SVG inline -->
+    <div class="cover-logo">
+      <svg width="72" height="72" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="96" fill="#0a1628" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+        <!-- outer arc teal -->
+        <path d="M 100 20 A 80 80 0 0 1 170 155" stroke="#2ec4a9" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- outer arc blue -->
+        <path d="M 170 155 A 80 80 0 0 1 38 148" stroke="#1a5fb4" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- outer arc dark -->
+        <path d="M 38 148 A 80 80 0 0 1 100 20" stroke="#1a3a6e" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- center node -->
+        <circle cx="100" cy="100" r="14" fill="white"/>
+        <!-- spokes -->
+        <line x1="100" y1="100" x2="52"  y2="82"  stroke="#1a5fb4" stroke-width="6" stroke-linecap="round"/>
+        <line x1="100" y1="100" x2="100" y2="20"  stroke="#2ec4a9" stroke-width="6" stroke-linecap="round"/>
+        <line x1="100" y1="100" x2="163" y2="62"  stroke="#2ec4a9" stroke-width="6" stroke-linecap="round"/>
+        <line x1="100" y1="100" x2="115" y2="170" stroke="white"   stroke-width="6" stroke-linecap="round"/>
+        <!-- outer nodes -->
+        <circle cx="52"  cy="82"  r="10" fill="#1a5fb4"/>
+        <circle cx="100" cy="20"  r="10" fill="#2ec4a9"/>
+        <circle cx="163" cy="62"  r="10" fill="#2ec4a9"/>
+        <circle cx="115" cy="170" r="10" fill="white"/>
+      </svg>
+    </div>
+    <div class="cover-brand">
+      <div class="brand-name"><span class="pyme">Pyme</span><span class="one">One</span></div>
+      <div class="brand-tag">Sistema de Gestión Integral</div>
+    </div>
+  </div>
+  <h1>Manual de Usuario<br><span>Guía completa del sistema</span></h1>
+  <p class="subtitle">Todo lo que necesitás saber para operar PymeOne desde el primer día — para vendedores y administradores.</p>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="label">Versión</div><div class="value">1.0 — Mayo 2026</div></div>
+    <div class="cover-meta-item"><div class="label">Roles cubiertos</div><div class="value">Vendedor · Administrador</div></div>
+    <div class="cover-meta-item"><div class="label">Plataforma</div><div class="value">Web · cualquier dispositivo</div></div>
+    <div class="cover-meta-item"><div class="label">Rubros</div><div class="value">Todos los rubros comerciales</div></div>
+  </div>
+</div>
+
+<!-- ══ TOC ══ -->
+<div class="toc">
+  <h2>📌 Contenido</h2>
+  <ol>
+    <li><a href="#s1">Acceso al sistema — Login y roles</a></li>
+    <li><a href="#s2">Dashboard — Panel de control gerencial</a></li>
+    <li><a href="#s3">Inventario — Productos y categorías</a>
+      <ul class="sub">
+        <li><a href="#s3a">Alta, edición y búsqueda de productos</a></li>
+        <li><a href="#s3b">Campos del producto explicados</a></li>
+      </ul>
+    </li>
+    <li><a href="#s4">Códigos de barras por unidad física</a></li>
+    <li><a href="#s5">Ventas — Registrar y gestionar</a></li>
+    <li><a href="#s6">Clientes</a></li>
+    <li><a href="#s7">Proveedores</a></li>
+    <li><a href="#s8">Empleados</a></li>
+    <li><a href="#s9">Pantalla de exhibición (Display)</a></li>
+    <li><a href="#s10">Administración del sistema</a>
+      <ul class="sub">
+        <li><a href="#s10a">Gestión de usuarios</a></li>
+        <li><a href="#s10b">Imágenes y almacenamiento en la nube</a></li>
+        <li><a href="#s10c">Promociones bancarias</a></li>
+      </ul>
+    </li>
+    <li><a href="#s11">Tabla de permisos por rol</a></li>
+  </ol>
+</div>
+
+
+<!-- 1. ACCESO -->
+<div class="sec" id="s1">
+  <div class="sec-head">
+    <div class="sec-icon">🔐</div>
+    <h2>1. Acceso al sistema</h2>
+    <span class="sec-url">/login</span>
+  </div>
+  <div class="sec-body">
+    <p>Para ingresar necesitás un <strong>usuario y contraseña</strong> que te proporciona el administrador. PymeOne maneja dos roles:</p>
+    <div class="kgrid" style="margin-top:18px;">
+      <div class="kcard">
+        <div class="ki">👑</div>
+        <div class="kl">Administrador</div>
+        <div class="kd">Acceso total: ventas, inventario, reportes, usuarios, configuración del sistema.</div>
+      </div>
+      <div class="kcard">
+        <div class="ki">🏪</div>
+        <div class="kl">Vendedor</div>
+        <div class="kd">Registrar ventas, consultar stock y productos, gestionar clientes.</div>
+      </div>
+    </div>
+    <ol class="steps" style="margin-top:20px;">
+      <li><div class="st">Abrí el navegador (Chrome, Edge, Firefox, Safari) en cualquier dispositivo.</div></li>
+      <li><div class="st">Ingresá la dirección web del sistema y tu <strong>email</strong> y <strong>contraseña</strong>.</div></li>
+      <li><div class="st">Hacé click en <strong>"Iniciar sesión"</strong>. Serás redirigido al panel principal.</div></li>
+    </ol>
+    <div class="tip"><span class="ci">💡</span><span>Si olvidaste tu contraseña, contactá al administrador para que la restablezca desde <strong>Administración → Usuarios → Editar</strong>.</span></div>
+  </div>
+</div>
+
+
+<!-- 2. DASHBOARD -->
+<div class="sec" id="s2">
+  <div class="sec-head">
+    <div class="sec-icon">📊</div>
+    <h2>2. Dashboard — Panel de control</h2>
+    <span class="sec-url">/admin/</span>
+  </div>
+  <div class="sec-body">
+    <p><span class="rtag r-admin">Solo Administrador</span> Pantalla principal del admin. Resumen completo y en tiempo real del negocio.</p>
+
+    <h3 style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">📈 Indicadores clave (KPIs)</h3>
+    <table class="dt">
+      <thead><tr><th>Indicador</th><th>Qué muestra</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Ventas hoy</strong></td><td>Total facturado en el día actual (ventas completadas).</td></tr>
+        <tr><td><strong>Ventas del mes</strong></td><td>Facturación acumulada del mes en curso.</td></tr>
+        <tr><td><strong>Variación vs. mes anterior</strong></td><td>Porcentaje de crecimiento o caída. Verde = creció, rojo = bajó.</td></tr>
+        <tr><td><strong>Ticket promedio</strong></td><td>Monto promedio por venta en el mes. Mide estrategias de upselling.</td></tr>
+        <tr><td><strong>Margen bruto estimado</strong></td><td>Diferencia entre precio de venta y costo de todos los productos vendidos.</td></tr>
+        <tr><td><strong>Stock bajo / Sin stock</strong></td><td>Productos en o por debajo del mínimo configurado. Requieren reposición.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">📉 Gráficos disponibles</h3>
+    <ul class="flist">
+      <li><span class="fbullet">📆</span><div><div class="ftitle">Ventas diarias — últimos 30 días</div><div class="fdesc">Gráfico de barras con la facturación de cada día. Identificá días pico, caídas y tendencias.</div></div></li>
+      <li><span class="fbullet">📅</span><div><div class="ftitle">Ventas mensuales — últimos 6 meses</div><div class="fdesc">Comparativa de facturación y cantidad de ventas mes a mes.</div></div></li>
+      <li><span class="fbullet">💳</span><div><div class="ftitle">Métodos de pago del mes</div><div class="fdesc">Distribución entre efectivo, débito, crédito, transferencia y otros. Ideal para gestión de caja.</div></div></li>
+      <li><span class="fbullet">🏆</span><div><div class="ftitle">Top 8 productos por facturación</div><div class="fdesc">Ranking de los artículos que más dinero generaron. Si no hay ventas del mes, muestra el histórico.</div></div></li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- 3. INVENTARIO -->
+<div class="sec" id="s3">
+  <div class="sec-head">
+    <div class="sec-icon">📦</div>
+    <h2>3. Inventario</h2>
+    <span class="sec-url">/inventario/</span>
+  </div>
+  <div class="sec-body">
+    <h3 id="s3a" style="margin:0 0 14px;font-size:.95rem;color:var(--blue);">3.1 Alta de un producto nuevo</h3>
+    <ol class="steps">
+      <li><div class="st">Andá a <strong>Inventario → Nuevo producto</strong>.</div></li>
+      <li><div class="st">Completá los campos obligatorios: <strong>SKU</strong>, <strong>Nombre</strong>, <strong>Categoría</strong>, <strong>Precio de venta</strong>.</div></li>
+      <li><div class="st">Completá opcionales recomendados: Marca, Proveedor, <strong>Precio de costo</strong> (para margen bruto), Stock inicial, Stock mínimo.</div></li>
+      <li><div class="st">Subí una <strong>foto del producto</strong> — desde computadora o cámara del celular. Se guarda automáticamente en la nube.</div></li>
+      <li><div class="st">Hacé click en <strong>"Guardar producto"</strong>.</div></li>
+    </ol>
+    <div class="info"><span class="ci">ℹ️</span><span>El <strong>SKU</strong> es el código único por producto. Debe ser distinto para cada artículo. Ejemplo: <span class="mono">ZAP001</span>, <span class="mono">CAM003</span>. Con él buscás y facturás rápido.</span></div>
+
+    <h3 style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">3.2 Editar y ajustar stock</h3>
+    <p style="font-size:14px;color:var(--text);">En la tabla de inventario, hacé click en ✏️ para editar precio, stock, imagen o cualquier dato. Los cambios se aplican en tiempo real.</p>
+    <div class="warning"><span class="ci">⚠️</span><span>Bajá el stock manualmente solo para ajustes reales (rotura, merma, diferencia de conteo). Las ventas descuentan el stock <em>automáticamente</em>.</span></div>
+
+    <h3 id="s3b" style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">3.3 Campos del producto explicados</h3>
+    <table class="dt">
+      <thead><tr><th>Campo</th><th>Descripción</th><th>¿Obligatorio?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SKU</strong></td><td>Código único. No puede repetirse entre productos.</td><td>✅</td></tr>
+        <tr><td><strong>Nombre</strong></td><td>Nombre del artículo visible en ventas, display y reportes.</td><td>✅</td></tr>
+        <tr><td><strong>Categoría</strong></td><td>Agrupación para filtros, reportes y generación de barcodes.</td><td>✅</td></tr>
+        <tr><td><strong>Precio de venta</strong></td><td>Precio al público. Se usa al facturar.</td><td>✅</td></tr>
+        <tr><td><strong>Precio de costo</strong></td><td>Costo del artículo. Necesario para calcular margen bruto en el dashboard.</td><td>No</td></tr>
+        <tr><td><strong>Proveedor</strong></td><td>Empresa o persona que provee el artículo. Se codifica en el barcode.</td><td>No</td></tr>
+        <tr><td><strong>Marca</strong></td><td>Marca comercial. Aparece en las búsquedas de venta.</td><td>No</td></tr>
+        <tr><td><strong>Stock actual</strong></td><td>Cantidad disponible. Se reduce automáticamente con cada venta.</td><td>No</td></tr>
+        <tr><td><strong>Stock mínimo</strong></td><td>Umbral de alerta: cuando el stock cae por debajo, aparece en el dashboard.</td><td>No</td></tr>
+        <tr><td><strong>Destacado</strong></td><td>Si está activo, el producto aparece en el ticker del display para clientes.</td><td>No</td></tr>
+        <tr><td><strong>Activo</strong></td><td>Si está inactivo, no aparece en ventas ni en el inventario.</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- 4. BARCODES -->
+<div class="sec" id="s4">
+  <div class="sec-head">
+    <div class="sec-icon">🏷️</div>
+    <h2>4. Códigos de barras por unidad física</h2>
+    <span class="sec-url">/inventario/codigos-barras</span>
+  </div>
+  <div class="sec-body">
+    <p>PymeOne genera un <strong>código de barras único de 16 dígitos</strong> por cada unidad física que ingresa al depósito. Trazabilidad completa de cada artículo desde que entra hasta que se vende.</p>
+
+    <h3 style="margin:18px 0 10px;font-size:.95rem;color:var(--blue);">Estructura del código</h3>
+    <div class="bc-demo">
+      <span style="color:#e05260;">CAT</span><span style="color:#1a5fb4;">SUP</span><span style="color:var(--navy);">PROD</span><span style="color:var(--teal);">SECUENCIA</span>
+      <sub>3 dígitos (cat.) · 3 dígitos (prov.) · 4 dígitos (prod.) · 6 dígitos (secuencia global) = 16 total</sub>
+    </div>
+
+    <h3 style="margin:18px 0 10px;font-size:.95rem;color:var(--blue);">Cómo ingresar unidades nuevas</h3>
+    <ol class="steps">
+      <li><div class="st">Entrá a <strong>Inventario → Códigos de barras</strong>.</div></li>
+      <li><div class="st">Hacé click en el botón verde <strong>"Ingresar unidades"</strong>.</div></li>
+      <li><div class="st">Seleccioná la <strong>Categoría</strong>. La lista de productos se filtra sola.</div></li>
+      <li><div class="st">Elegí el <strong>Producto</strong> del listado filtrado.</div></li>
+      <li><div class="st">Ingresá la <strong>cantidad de unidades</strong> a recibir (1 a 999).</div></li>
+      <li><div class="st">Hacé click en <strong>"Generar códigos"</strong>. El sistema crea un barcode único para cada unidad y los muestra listos para imprimir.</div></li>
+    </ol>
+    <div class="tip"><span class="ci">🖨️</span><span>Para imprimir los barcodes, usá <strong>Ctrl+P</strong>. Son formato <strong>CODE128</strong>, compatibles con cualquier lector de código de barras estándar.</span></div>
+
+    <h3 style="margin:18px 0 10px;font-size:.95rem;color:var(--blue);">Estados de una unidad</h3>
+    <table class="dt">
+      <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
+      <tbody>
+        <tr><td><span class="sbadge s-avail">disponible</span></td><td>La unidad está en stock, lista para vender.</td></tr>
+        <tr><td><span class="sbadge s-sold">vendida</span></td><td>Fue asignada a una venta completada.</td></tr>
+        <tr><td><span class="sbadge s-dmg">dañada</span></td><td>Marcada como dañada o fuera de uso.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- 5. VENTAS -->
+<div class="sec" id="s5">
+  <div class="sec-head">
+    <div class="sec-icon">💰</div>
+    <h2>5. Ventas</h2>
+    <span class="sec-url">/ventas/</span>
+  </div>
+  <div class="sec-body">
+    <h3 style="margin:0 0 14px;font-size:.95rem;color:var(--blue);">5.1 Registrar una venta nueva</h3>
+    <ol class="steps">
+      <li><div class="st">Andá a <strong>Ventas → Nueva venta</strong>.</div></li>
+      <li><div class="st">Escribí en el buscador el <strong>nombre, SKU o marca</strong> del producto (mínimo 2 caracteres). Aparecen sugerencias al instante.</div></li>
+      <li><div class="st">Seleccioná el producto. Se agrega al carrito con cantidad 1. Cambiá la cantidad con + / − o editando el número.</div></li>
+      <li><div class="st">Para agregar un <strong>descuento</strong>, ingresá el porcentaje (ej: <span class="mono">10</span> = 10% de descuento).</div></li>
+      <li><div class="st">Seleccioná el <strong>método de pago</strong>: Efectivo, Débito, Crédito, Transferencia u Otro.</div></li>
+      <li><div class="st">Opcionalmente vinculá un <strong>Cliente</strong> y agregá <strong>notas</strong>.</div></li>
+      <li><div class="st">Hacé click en <strong>"Registrar venta"</strong>. El stock se descuenta automáticamente y se genera el comprobante.</div></li>
+    </ol>
+    <div class="tip"><span class="ci">⚡</span><span>Si tenés un lector de código de barras, podés escanear directamente el barcode de 16 dígitos para agregar el producto al carrito al instante.</span></div>
+
+    <h3 style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">5.2 Historial y filtros</h3>
+    <p style="font-size:13.5px;color:var(--text);">La pantalla de ventas muestra todas las transacciones. Filtrá por <strong>estado</strong> (completada/cancelada), <strong>método de pago</strong> y <strong>rango de fechas</strong>.</p>
+
+    <h3 style="margin:20px 0 12px;font-size:.95rem;color:var(--blue);">5.3 Cancelar una venta</h3>
+    <p style="font-size:13.5px;color:var(--text);">Desde el detalle de la venta, el admin puede cancelarla. Al cancelar, el stock de todos los artículos se restaura automáticamente.</p>
+    <div class="warning"><span class="ci">⚠️</span><span><span class="rtag r-admin">Solo Admin</span> Solo un administrador puede cancelar ventas.</span></div>
+  </div>
+</div>
+
+
+<!-- 6. CLIENTES -->
+<div class="sec" id="s6">
+  <div class="sec-head">
+    <div class="sec-icon">👥</div>
+    <h2>6. Clientes</h2>
+    <span class="sec-url">/clientes/</span>
+  </div>
+  <div class="sec-body">
+    <ul class="flist">
+      <li><span class="fbullet">➕</span><div><div class="ftitle">Agregar cliente</div><div class="fdesc">Nombre, email, teléfono y dirección. El email es opcional pero recomendado.</div></div></li>
+      <li><span class="fbullet">✏️</span><div><div class="ftitle">Editar datos</div><div class="fdesc">Actualizá cualquier campo desde el botón de edición en la tabla.</div></div></li>
+      <li><span class="fbullet">📋</span><div><div class="ftitle">Historial de compras</div><div class="fdesc">Desde el detalle del cliente podés ver todas las ventas realizadas.</div></div></li>
+      <li><span class="fbullet">🔴</span><div><div class="ftitle">Desactivar cliente</div><div class="fdesc">Un cliente inactivo no aparece en el selector de ventas, pero conserva su historial.</div></div></li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- 7. PROVEEDORES -->
+<div class="sec" id="s7">
+  <div class="sec-head">
+    <div class="sec-icon">🏭</div>
+    <h2>7. Proveedores</h2>
+    <span class="sec-url">/proveedores/</span>
+  </div>
+  <div class="sec-body">
+    <p>Registrá las empresas o personas que te proveen mercadería. Se vinculan a productos y barcodes.</p>
+    <table class="dt" style="margin-top:14px;">
+      <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Nombre</strong></td><td>Razón social o nombre comercial.</td></tr>
+        <tr><td><strong>Contacto</strong></td><td>Persona de contacto.</td></tr>
+        <tr><td><strong>Teléfono / Email</strong></td><td>Datos de comunicación directa.</td></tr>
+        <tr><td><strong>CUIT</strong></td><td>Identificación fiscal (opcional).</td></tr>
+        <tr><td><strong>Notas</strong></td><td>Condiciones comerciales, plazos, observaciones.</td></tr>
+      </tbody>
+    </table>
+    <div class="info" style="margin-top:14px;"><span class="ci">ℹ️</span><span>Los dígitos 4-6 del código de barras identifican al proveedor. Cada unidad queda trazada a su proveedor de origen.</span></div>
+  </div>
+</div>
+
+
+<!-- 8. EMPLEADOS -->
+<div class="sec" id="s8">
+  <div class="sec-head">
+    <div class="sec-icon">🧑‍💼</div>
+    <h2>8. Empleados</h2>
+    <span class="sec-url">/empleados/</span>
+  </div>
+  <div class="sec-body">
+    <ul class="flist">
+      <li><span class="fbullet">📝</span><div><div class="ftitle">Datos personales y laborales</div><div class="fdesc">Nombre, DNI, teléfono, fecha de ingreso, cargo y observaciones.</div></div></li>
+      <li><span class="fbullet">🏷️</span><div><div class="ftitle">Trazabilidad de recepciones</div><div class="fdesc">Cada lote de unidades ingresadas queda vinculado al usuario que las registró.</div></div></li>
+    </ul>
+    <div class="warning"><span class="ci">⚠️</span><span>El módulo de Empleados es informativo. Para dar <strong>acceso al sistema</strong>, creá el usuario en <strong>Administración → Usuarios</strong>.</span></div>
+  </div>
+</div>
+
+
+<!-- 9. DISPLAY -->
+<div class="sec" id="s9">
+  <div class="sec-head">
+    <div class="sec-icon">🖥️</div>
+    <h2>9. Pantalla de exhibición (Display)</h2>
+    <span class="sec-url">/display/</span>
+  </div>
+  <div class="sec-body">
+    <p>Pantalla pública diseñada para un <strong>monitor o TV orientada al cliente</strong>. No requiere login.</p>
+    <ul class="flist">
+      <li><span class="fbullet">🏷️</span><div><div class="ftitle">Catálogo en tiempo real</div><div class="fdesc">Muestra todos los productos activos con imagen, nombre y precio actualizado automáticamente.</div></div></li>
+      <li><span class="fbullet">⭐</span><div><div class="ftitle">Ticker de productos destacados</div><div class="fdesc">Cinta animada en la parte superior que desplaza a velocidad constante los productos marcados como "Destacado" con su precio.</div></div></li>
+      <li><span class="fbullet">🔍</span><div><div class="ftitle">Modal de detalle</div><div class="fdesc">El cliente puede hacer click en cualquier producto para ver imagen ampliada, descripción y precio.</div></div></li>
+    </ul>
+    <div class="tip"><span class="ci">💡</span><span>Para que un producto aparezca en el ticker, activá el checkbox <strong>"Destacado"</strong> en la ficha del producto. Podés destacar tantos como quieras.</span></div>
+  </div>
+</div>
+
+
+<!-- 10. ADMIN -->
+<div class="sec" id="s10">
+  <div class="sec-head">
+    <div class="sec-icon">⚙️</div>
+    <h2>10. Administración del sistema</h2>
+  </div>
+  <div class="sec-body">
+    <h3 id="s10a" style="margin:0 0 14px;font-size:.95rem;color:var(--blue);">10.1 Gestión de usuarios <span class="rtag r-admin">Solo Admin</span></h3>
+    <ol class="steps">
+      <li><div class="st">Andá a <strong>Administración → Usuarios → Nuevo usuario</strong>.</div></li>
+      <li><div class="st">Completá nombre, email (será el usuario de login), contraseña y rol (<strong>admin</strong> o <strong>vendedor</strong>).</div></li>
+      <li><div class="st">Para cambiar contraseña: editá el usuario y completá "Nueva contraseña". Si lo dejás vacío, no cambia.</div></li>
+      <li><div class="st">Para deshabilitar sin eliminar: desmarcá "Activo". El historial de ventas queda intacto.</div></li>
+    </ol>
+    <div class="warning"><span class="ci">⚠️</span><span>No podés eliminar tu propia cuenta. Si necesitás hacerlo, pedile a otro administrador.</span></div>
+
+    <h3 id="s10b" style="margin:22px 0 12px;font-size:.95rem;color:var(--blue);">10.2 Imágenes de productos</h3>
+    <p style="font-size:13.5px;color:var(--text);margin-bottom:10px;">Las imágenes se almacenan en la nube (Cloudinary). No se pierden aunque el servidor se reinicie.</p>
+    <ul style="font-size:13.5px;color:var(--text);padding-left:20px;line-height:2.1;">
+      <li>Al cargar una imagen en el formulario, se sube automáticamente.</li>
+      <li>Desde celular, el botón de imagen abre la cámara directamente.</li>
+      <li>Formatos soportados: JPG, PNG, GIF, WEBP.</li>
+    </ul>
+
+    <h3 id="s10c" style="margin:22px 0 12px;font-size:.95rem;color:var(--blue);">10.3 Promociones bancarias</h3>
+    <p style="font-size:13.5px;color:var(--text);">Cargá las promociones vigentes (cuotas sin interés, descuentos con tarjeta). Aparecen destacadas en el dashboard para que el equipo de ventas las tenga presentes al atender.</p>
+  </div>
+</div>
+
+
+<!-- 11. PERMISOS -->
+<div class="sec" id="s11">
+  <div class="sec-head">
+    <div class="sec-icon">🔑</div>
+    <h2>11. Tabla de permisos por rol</h2>
+  </div>
+  <div class="sec-body">
+    <table class="dt">
+      <thead>
+        <tr>
+          <th>Función</th>
+          <th style="text-align:center;">👑 Administrador</th>
+          <th style="text-align:center;">🏪 Vendedor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Ver y editar inventario</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Ver stock de productos</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-check">✓</span></td></tr>
+        <tr><td>Registrar ventas</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-check">✓</span></td></tr>
+        <tr><td>Cancelar ventas</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Gestionar clientes</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-check">✓</span></td></tr>
+        <tr><td>Ingresar unidades / barcodes</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Dashboard y gráficos</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Gestionar usuarios</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Ver proveedores y empleados</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Configuración del sistema</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-cross">✗</span></td></tr>
+        <tr><td>Display público</td><td style="text-align:center;"><span class="pm-check">✓</span></td><td style="text-align:center;"><span class="pm-check">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div class="footer">
+  <!-- Logo pequeño -->
+  <svg width="32" height="32" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:8px;">
+    <circle cx="100" cy="100" r="94" fill="#0a1628"/>
+    <path d="M 100 20 A 80 80 0 0 1 170 155" stroke="#2ec4a9" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M 170 155 A 80 80 0 0 1 38 148" stroke="#1a5fb4" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M 38 148 A 80 80 0 0 1 100 20" stroke="#1a3a6e" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="12" fill="white"/>
+    <line x1="100" y1="100" x2="52" y2="82" stroke="#1a5fb4" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="100" y2="20" stroke="#2ec4a9" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="163" y2="62" stroke="#2ec4a9" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="115" y2="170" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="52" cy="82" r="9" fill="#1a5fb4"/>
+    <circle cx="100" cy="20" r="9" fill="#2ec4a9"/>
+    <circle cx="163" cy="62" r="9" fill="#2ec4a9"/>
+    <circle cx="115" cy="170" r="9" fill="white"/>
+  </svg>
+  <strong>PymeOne</strong> · Sistema de Gestión Integral · Manual de Usuario v1.0 · Mayo 2026<br>
+  Para soporte técnico, contactá al equipo de PymeOne.
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>
