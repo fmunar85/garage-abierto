@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — GarageAbierto Sistema de Gestión</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #1a1a2e;
+    background: #f4f6fb;
+    line-height: 1.65;
+  }
+
+  /* ── Layout ── */
+  .page-wrap { max-width: 900px; margin: 0 auto; padding: 40px 30px 80px; }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 60px 50px 50px;
+    margin-bottom: 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    background: rgba(212,175,55,0.12);
+    border-radius: 50%;
+  }
+  .cover::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -40px;
+    width: 200px; height: 200px;
+    background: rgba(212,175,55,0.07);
+    border-radius: 50%;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: #d4af37;
+    color: #1a1a2e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .cover h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin-bottom: 14px; }
+  .cover h1 span { color: #d4af37; }
+  .cover .subtitle { font-size: 1.1rem; color: #a0aec0; max-width: 500px; }
+  .cover-meta { margin-top: 35px; display: flex; gap: 30px; flex-wrap: wrap; }
+  .cover-meta-item { font-size: 13px; color: #718096; }
+  .cover-meta-item strong { color: #d4af37; display: block; font-size: 14px; }
+
+  /* ── TOC ── */
+  .toc {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 45px;
+  }
+  .toc h2 { font-size: 1rem; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 8px; }
+  .toc a { color: #0f3460; text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .toc-sub { padding-left: 18px; margin-top: 5px; }
+  .toc .toc-sub li { margin-bottom: 4px; font-size: 13.5px; color: #718096; }
+
+  /* ── Section ── */
+  .section {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 28px;
+    background: linear-gradient(90deg, #f7f9fc, #fff);
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #0f3460, #1a1a2e);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .section-header .section-url {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-family: 'Courier New', monospace;
+    background: #f0f4ff;
+    color: #0f3460;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid #c3d2f5;
+    white-space: nowrap;
+  }
+  .section-body { padding: 24px 28px; }
+
+  /* ── Role badge ── */
+  .role-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .role-admin { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+  .role-seller { background: #d1e7dd; color: #0f5132; border: 1px solid #198754; }
+  .role-both { background: #e8f4fd; color: #0c5460; border: 1px solid #0dcaf0; }
+
+  /* ── Feature list ── */
+  .feature-list { list-style: none; padding: 0; }
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4f8;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list .bullet {
+    width: 28px; height: 28px;
+    background: #f0f4ff;
+    border: 1px solid #c3d2f5;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .feature-list .fl-title { font-weight: 600; color: #1a1a2e; }
+  .feature-list .fl-desc { font-size: 13.5px; color: #4a5568; margin-top: 2px; }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step; padding: 0; list-style: none; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, #0f3460, #1a1a2e);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .steps li .step-text { font-size: 14px; color: #2d3748; padding-top: 5px; }
+  .steps li .step-text strong { color: #0f3460; }
+
+  /* ── Tip / Warning boxes ── */
+  .tip, .warning, .info {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13.5px;
+  }
+  .tip { background: #f0fff4; border-left: 4px solid #38a169; color: #276749; }
+  .warning { background: #fffbeb; border-left: 4px solid #d69e2e; color: #744210; }
+  .info { background: #ebf8ff; border-left: 4px solid #3182ce; color: #1a365d; }
+  .tip .icon, .warning .icon, .info .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Table ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .data-table th {
+    background: #f7f9fc;
+    color: #4a5568;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f4f8;
+    color: #2d3748;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #f7f9fc; }
+  .mono { font-family: 'Courier New', monospace; font-size: 12px; background: #f0f4ff; padding: 1px 6px; border-radius: 4px; color: #0f3460; }
+
+  /* ── KPI grid ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 16px 0; }
+  .kpi-card {
+    background: #f7f9fc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .kpi-card .kpi-icon { font-size: 26px; margin-bottom: 6px; }
+  .kpi-card .kpi-label { font-size: 12px; color: #718096; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-card .kpi-desc { font-size: 12.5px; color: #4a5568; margin-top: 4px; }
+
+  /* ── Footer ── */
+  .doc-footer {
+    text-align: center;
+    padding: 30px 0 10px;
+    font-size: 12px;
+    color: #a0aec0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 50px;
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .page-wrap { max-width: 100%; padding: 0; }
+    .cover { border-radius: 0; margin-bottom: 30px; page-break-after: avoid; }
+    .section { page-break-inside: avoid; border: 1px solid #ccc; margin-bottom: 20px; }
+    .toc { page-break-after: always; }
+    a { color: inherit; text-decoration: none; }
+    .section-url { display: none; }
+  }
+  @page { margin: 20mm 15mm; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-badge">📋 Documentación Oficial</div>
+    <h1>Sistema de Gestión<br><span>GarageAbierto</span></h1>
+    <p class="subtitle">Manual completo para vendedores y administradores — todo lo que necesitás saber para operar el sistema desde el primer día.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>Versión</strong> 1.0 — Mayo 2026</div>
+      <div class="cover-meta-item"><strong>Roles cubiertos</strong> Vendedor · Administrador</div>
+      <div class="cover-meta-item"><strong>Plataforma</strong> Web (cualquier navegador)</div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>📌 Contenido</h2>
+    <ol>
+      <li><a href="#acceso">Acceso al sistema — Login y roles</a></li>
+      <li><a href="#dashboard">Dashboard Administrador — Panel de control</a></li>
+      <li><a href="#inventario">Inventario — Productos y categorías</a>
+        <ul class="toc-sub">
+          <li><a href="#productos">Ver, agregar y editar productos</a></li>
+          <li><a href="#barcodes">Códigos de barras por unidad física</a></li>
+        </ul>
+      </li>
+      <li><a href="#ventas">Ventas — Registrar y gestionar</a></li>
+      <li><a href="#clientes">Clientes</a></li>
+      <li><a href="#proveedores">Proveedores</a></li>
+      <li><a href="#empleados">Empleados</a></li>
+      <li><a href="#display">Pantalla de exhibición (Display)</a></li>
+      <li><a href="#admin">Administración del sistema</a>
+        <ul class="toc-sub">
+          <li><a href="#usuarios">Gestión de usuarios</a></li>
+          <li><a href="#imagenes">Imágenes y Cloudinary</a></li>
+          <li><a href="#promociones">Promociones bancarias</a></li>
+        </ul>
+      </li>
+      <li><a href="#roles">Resumen de permisos por rol</a></li>
+    </ol>
+  </div>
+
+
+  <!-- 1. ACCESO -->
+  <div class="section" id="acceso">
+    <div class="section-header">
+      <div class="section-icon">🔐</div>
+      <h2>1. Acceso al sistema</h2>
+      <span class="section-url">/login</span>
+    </div>
+    <div class="section-body">
+      <p>Para ingresar al sistema necesitás un <strong>usuario y contraseña</strong> que te proporciona el administrador. El sistema maneja dos roles:</p>
+
+      <div class="kpi-grid" style="margin-top:18px;">
+        <div class="kpi-card">
+          <div class="kpi-icon">👑</div>
+          <div class="kpi-label">Administrador</div>
+          <div class="kpi-desc">Acceso total: ventas, inventario, reportes, usuarios, configuración.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🏪</div>
+          <div class="kpi-label">Vendedor</div>
+          <div class="kpi-desc">Registrar ventas, consultar stock y productos, ver clientes.</div>
+        </div>
+      </div>
+
+      <ol class="steps" style="margin-top:20px;">
+        <li><div class="step-text">Abrí el navegador y entrá a la dirección del sistema.</div></li>
+        <li><div class="step-text">Ingresá tu <strong>correo electrónico</strong> y <strong>contraseña</strong>.</div></li>
+        <li><div class="step-text">Hacé click en <strong>"Iniciar sesión"</strong>. Si los datos son correctos, serás redirigido al panel principal.</div></li>
+      </ol>
+
+      <div class="tip">
+        <span class="icon">💡</span>
+        <span>Si olvidaste tu contraseña o no podés ingresar, contactá al administrador del sistema para que la restablezca desde el panel de usuarios.</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 2. DASHBOARD -->
+  <div class="section" id="dashboard">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <h2>2. Dashboard — Panel de control</h2>
+      <span class="section-url">/admin/</span>
+    </div>
+    <div class="section-body">
+      <p><span class="role-tag role-admin">Solo Administrador</span> El dashboard es la primera pantalla que ves al ingresar como admin. Muestra un resumen completo y en tiempo real del negocio.</p>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">📈 Indicadores clave (KPIs)</h3>
+      <table class="data-table">
+        <thead><tr><th>Indicador</th><th>Qué significa</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ventas hoy</strong></td><td>Total facturado en el día actual (ventas completadas).</td></tr>
+          <tr><td><strong>Ventas del mes</strong></td><td>Facturación acumulada del mes en curso.</td></tr>
+          <tr><td><strong>Variación vs. mes anterior</strong></td><td>Porcentaje de crecimiento o caída respecto al mes previo. Verde = crecimiento, rojo = caída.</td></tr>
+          <tr><td><strong>Ticket promedio</strong></td><td>Monto promedio por venta en el mes. Útil para medir estrategias de upselling.</td></tr>
+          <tr><td><strong>Margen bruto estimado</strong></td><td>Diferencia entre precio de venta y costo de todos los productos vendidos en el mes.</td></tr>
+          <tr><td><strong>Stock bajo / Sin stock</strong></td><td>Productos que llegaron o están por debajo del mínimo configurado. Requieren reposición urgente.</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">📉 Gráficos</h3>
+      <ul class="feature-list">
+        <li>
+          <span class="bullet">📆</span>
+          <div><div class="fl-title">Ventas diarias (últimos 30 días)</div><div class="fl-desc">Gráfico de barras con la facturación de cada día. Permite ver tendencias, días pico y baches.</div></div>
+        </li>
+        <li>
+          <span class="bullet">📅</span>
+          <div><div class="fl-title">Ventas mensuales (últimos 6 meses)</div><div class="fl-desc">Comparativa de facturación y cantidad de ventas mes a mes para análisis de evolución.</div></div>
+        </li>
+        <li>
+          <span class="bullet">💳</span>
+          <div><div class="fl-title">Métodos de pago del mes</div><div class="fl-desc">Distribución entre efectivo, tarjeta, transferencia y otros. Útil para gestión de caja.</div></div>
+        </li>
+        <li>
+          <span class="bullet">🏆</span>
+          <div><div class="fl-title">Top 8 productos del mes</div><div class="fl-desc">Ranking de los artículos más vendidos por facturación. Si no hay ventas del mes, muestra el histórico.</div></div>
+        </li>
+      </ul>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">⚠️ Alertas de stock</h3>
+      <p style="font-size:14px; color:#4a5568;">En la parte inferior del dashboard aparece la lista de productos con stock bajo o agotado. Haciendo click en cada uno podés ir directamente a editarlo y actualizar su stock o configurar el mínimo.</p>
+    </div>
+  </div>
+
+
+  <!-- 3. INVENTARIO -->
+  <div class="section" id="inventario">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <h2>3. Inventario — Productos y categorías</h2>
+      <span class="section-url">/inventario/</span>
+    </div>
+    <div class="section-body">
+
+      <h3 id="productos" style="margin:0 0 14px; font-size:1rem; color:#0f3460;">3.1 Listar y buscar productos</h3>
+      <p style="font-size:14px; color:#4a5568; margin-bottom:14px;">La tabla de inventario muestra todos los productos activos con sus datos principales. Podés filtrar por categoría, proveedor o estado de stock, y usar el buscador para encontrar por nombre, SKU o marca.</p>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">3.2 Agregar un producto nuevo</h3>
+      <ol class="steps">
+        <li><div class="step-text">Entrá a <strong>Inventario → Nuevo producto</strong>.</div></li>
+        <li><div class="step-text">Completá los campos obligatorios: <strong>SKU</strong> (código único del producto), <strong>Nombre</strong>, <strong>Categoría</strong>, <strong>Precio de venta</strong>.</div></li>
+        <li><div class="step-text">Opcionales pero recomendados: <strong>Marca</strong>, <strong>Proveedor</strong>, <strong>Precio de costo</strong> (necesario para calcular margen bruto), <strong>Stock inicial</strong>, <strong>Stock mínimo</strong>.</div></li>
+        <li><div class="step-text">Subí una <strong>foto del producto</strong> — desde la computadora o desde la cámara del celular. La imagen se guarda automáticamente.</div></li>
+        <li><div class="step-text">Hacé click en <strong>"Guardar producto"</strong>.</div></li>
+      </ol>
+
+      <div class="info">
+        <span class="icon">ℹ️</span>
+        <span>El <strong>SKU</strong> debe ser único por producto. Ejemplo: <span class="mono">ACC001</span>, <span class="mono">GRI003</span>. Es el código con el que buscás y facturás el artículo.</span>
+      </div>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">3.3 Editar un producto existente</h3>
+      <p style="font-size:14px; color:#4a5568;">En la tabla de inventario, hacé click en el ícono de edición (✏️) de la fila del producto. Podés cambiar precio, stock, imagen, descripción y todos sus atributos. Los cambios se aplican de inmediato.</p>
+
+      <div class="warning">
+        <span class="icon">⚠️</span>
+        <span>Si bajás el stock manualmente, eso <strong>no genera un movimiento de venta</strong>. Las ventas descontarán el stock automáticamente al completarse. Usá la edición manual solo para ajustes de inventario (rotura, merma, etc.).</span>
+      </div>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">3.4 Campos del producto explicados</h3>
+      <table class="data-table">
+        <thead><tr><th>Campo</th><th>Descripción</th><th>¿Obligatorio?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SKU</strong></td><td>Código interno único del producto. No puede repetirse.</td><td>✅ Sí</td></tr>
+          <tr><td><strong>Nombre</strong></td><td>Nombre del artículo tal como aparece en ventas y display.</td><td>✅ Sí</td></tr>
+          <tr><td><strong>Categoría</strong></td><td>Agrupación del producto. Se usa para filtros y barcodes.</td><td>✅ Sí</td></tr>
+          <tr><td><strong>Proveedor</strong></td><td>Empresa o persona que suministra el artículo.</td><td>No</td></tr>
+          <tr><td><strong>Marca</strong></td><td>Marca comercial. Aparece en búsquedas de ventas.</td><td>No</td></tr>
+          <tr><td><strong>Precio de venta</strong></td><td>Precio al público. El que se usa al facturar.</td><td>✅ Sí</td></tr>
+          <tr><td><strong>Precio de costo</strong></td><td>Costo del producto. Se usa para calcular margen bruto en el dashboard.</td><td>No</td></tr>
+          <tr><td><strong>Stock actual</strong></td><td>Cantidad disponible. Se reduce automáticamente con cada venta.</td><td>No</td></tr>
+          <tr><td><strong>Stock mínimo</strong></td><td>Umbral de alerta. Cuando el stock cae por debajo, aparece en las alertas del dashboard.</td><td>No</td></tr>
+          <tr><td><strong>Destacado</strong></td><td>Si está activo, el producto aparece en el ticker del display para clientes.</td><td>No</td></tr>
+          <tr><td><strong>Activo</strong></td><td>Si está desactivado, el producto no aparece en ventas ni en el inventario visible.</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+
+  <!-- BARCODES -->
+  <div class="section" id="barcodes">
+    <div class="section-header">
+      <div class="section-icon">🏷️</div>
+      <h2>4. Códigos de barras por unidad física</h2>
+      <span class="section-url">/inventario/codigos-barras</span>
+    </div>
+    <div class="section-body">
+      <p>El sistema genera un <strong>código de barras único de 16 dígitos por cada unidad física</strong> que ingresa al depósito. Esto permite el trazado completo de cada artículo desde que entra hasta que se vende.</p>
+
+      <h3 style="margin:18px 0 12px; font-size:1rem; color:#0f3460;">Estructura del código</h3>
+      <div style="background:#f0f4ff; border-radius:10px; padding:16px; font-family:'Courier New',monospace; font-size:1.1rem; text-align:center; letter-spacing:3px; margin-bottom:16px; border:1px solid #c3d2f5;">
+        <span style="color:#e53e3e;">CAT</span><span style="color:#805ad5;">SUP</span><span style="color:#2b6cb0;">PROD</span><span style="color:#276749;">SECUENCIA</span>
+        <div style="font-size:11px; margin-top:8px; letter-spacing:1px; color:#718096;">3 dígitos · 3 dígitos · 4 dígitos · 6 dígitos = 16 en total</div>
+      </div>
+
+      <h3 style="margin:18px 0 12px; font-size:1rem; color:#0f3460;">Cómo ingresar unidades nuevas</h3>
+      <ol class="steps">
+        <li><div class="step-text">Entrá a <strong>Inventario → Códigos de barras</strong>.</div></li>
+        <li><div class="step-text">Hacé click en el botón <strong>"Ingresar unidades"</strong> (botón verde).</div></li>
+        <li><div class="step-text">Seleccioná la <strong>Categoría</strong> del artículo. La lista de productos se filtra automáticamente.</div></li>
+        <li><div class="step-text">Elegí el <strong>Producto</strong> del listado filtrado.</div></li>
+        <li><div class="step-text">Ingresá la <strong>cantidad de unidades</strong> a recibir (1 a 999).</div></li>
+        <li><div class="step-text">Hacé click en <strong>"Generar códigos"</strong>. El sistema crea automáticamente un barcode único para cada unidad y los muestra en pantalla listos para imprimir.</div></li>
+      </ol>
+
+      <div class="tip">
+        <span class="icon">🖨️</span>
+        <span>Para imprimir los códigos generados, usá <strong>Ctrl+P</strong> o el botón de impresión del navegador. Los barcodes son compatibles con cualquier lector de código de barras estándar (formato CODE128).</span>
+      </div>
+
+      <h3 style="margin:18px 0 12px; font-size:1rem; color:#0f3460;">Ver unidades de un producto</h3>
+      <p style="font-size:14px; color:#4a5568;">En la tabla principal, el badge de color en la columna "Unidades" indica cuántas unidades hay cargadas. Hacé click en <strong>"Ver unidades"</strong> (ícono 🔍) para ver cada barcode individual, su estado (disponible, vendida, dañada) y la fecha de ingreso. Desde ahí también podés eliminar unidades individualmente.</p>
+
+      <table class="data-table" style="margin-top:14px;">
+        <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><span style="background:#d1e7dd;color:#0f5132;padding:2px 8px;border-radius:12px;font-size:12px;">disponible</span></td><td>La unidad está en stock, lista para vender.</td></tr>
+          <tr><td><span style="background:#f8d7da;color:#842029;padding:2px 8px;border-radius:12px;font-size:12px;">vendida</span></td><td>La unidad fue asignada a una venta.</td></tr>
+          <tr><td><span style="background:#fff3cd;color:#664d03;padding:2px 8px;border-radius:12px;font-size:12px;">dañada</span></td><td>La unidad fue marcada como dañada o fuera de uso.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- 5. VENTAS -->
+  <div class="section" id="ventas">
+    <div class="section-header">
+      <div class="section-icon">💰</div>
+      <h2>5. Ventas</h2>
+      <span class="section-url">/ventas/</span>
+    </div>
+    <div class="section-body">
+      <h3 style="margin:0 0 14px; font-size:1rem; color:#0f3460;">5.1 Registrar una venta nueva</h3>
+      <ol class="steps">
+        <li><div class="step-text">Andá a <strong>Ventas → Nueva venta</strong>.</div></li>
+        <li><div class="step-text">En el campo de búsqueda, escribí el <strong>nombre, SKU o marca</strong> del producto (mínimo 2 caracteres). Aparecerá un menú con las coincidencias.</div></li>
+        <li><div class="step-text">Seleccioná el producto — se agrega al carrito con cantidad 1. Podés cambiar la cantidad haciendo click en los botones + y −, o editando el número directamente.</div></li>
+        <li><div class="step-text">Si querés aplicar un <strong>descuento</strong>, ingresá el porcentaje en el campo correspondiente (ej: <span class="mono">10</span> = 10%).</div></li>
+        <li><div class="step-text">Seleccioná el <strong>método de pago</strong>: Efectivo, Tarjeta de débito, Tarjeta de crédito, Transferencia u Otro.</div></li>
+        <li><div class="step-text">Opcionalmente, vinculá la venta a un <strong>Cliente</strong> de la base de datos.</div></li>
+        <li><div class="step-text">Agregá <strong>notas</strong> si es necesario (ej: "pago en cuotas acordadas").</div></li>
+        <li><div class="step-text">Hacé click en <strong>"Registrar venta"</strong>. El stock se descuenta automáticamente y se genera el comprobante.</div></li>
+      </ol>
+
+      <div class="tip">
+        <span class="icon">⚡</span>
+        <span>Podés buscar productos también por <strong>código de barras de 16 dígitos</strong> si tenés un lector conectado — escribís el código y el sistema encuentra el producto al instante.</span>
+      </div>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">5.2 Historial de ventas</h3>
+      <p style="font-size:14px; color:#4a5568; margin-bottom:14px;">La pantalla principal de ventas muestra todas las transacciones. Podés filtrar por:</p>
+      <ul style="font-size:14px; color:#4a5568; padding-left:22px; line-height:2;">
+        <li><strong>Estado:</strong> completada o cancelada</li>
+        <li><strong>Método de pago:</strong> efectivo, tarjeta, etc.</li>
+        <li><strong>Rango de fechas:</strong> desde / hasta</li>
+      </ul>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">5.3 Detalle y factura</h3>
+      <p style="font-size:14px; color:#4a5568;">Haciendo click en el número de venta podés ver el detalle completo: artículos, cantidades, precios, descuento, total y datos del cliente. Desde ahí también podés <strong>imprimir o descargar la factura</strong>.</p>
+
+      <h3 style="margin:20px 0 12px; font-size:1rem; color:#0f3460;">5.4 Cancelar una venta</h3>
+      <p style="font-size:14px; color:#4a5568;">Desde el detalle de la venta, el administrador puede cancelarla. <strong>Al cancelar, el stock de todos los productos involucrados se restaura automáticamente.</strong></p>
+
+      <div class="warning">
+        <span class="icon">⚠️</span>
+        <span><span class="role-tag role-admin">Solo Administrador</span> Solo un administrador puede cancelar ventas. Un vendedor puede registrar pero no cancelar.</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 6. CLIENTES -->
+  <div class="section" id="clientes">
+    <div class="section-header">
+      <div class="section-icon">👥</div>
+      <h2>6. Clientes</h2>
+      <span class="section-url">/clientes/</span>
+    </div>
+    <div class="section-body">
+      <p>El módulo de clientes permite mantener una base de datos de compradores habituales. Podés vincularlos a las ventas para llevar un historial personalizado.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="bullet">➕</span>
+          <div><div class="fl-title">Agregar cliente</div><div class="fl-desc">Completá nombre, email, teléfono y dirección. El email es opcional pero recomendado para identificación.</div></div>
+        </li>
+        <li>
+          <span class="bullet">✏️</span>
+          <div><div class="fl-title">Editar datos</div><div class="fl-desc">Actualizá cualquier dato del cliente desde el botón de edición en la tabla.</div></div>
+        </li>
+        <li>
+          <span class="bullet">📋</span>
+          <div><div class="fl-title">Historial de compras</div><div class="fl-desc">Entrando al detalle del cliente podés ver todas las ventas que se le realizaron.</div></div>
+        </li>
+        <li>
+          <span class="bullet">🔴</span>
+          <div><div class="fl-title">Desactivar cliente</div><div class="fl-desc">Un cliente desactivado no aparece en el selector de ventas, pero mantiene su historial intacto.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- 7. PROVEEDORES -->
+  <div class="section" id="proveedores">
+    <div class="section-header">
+      <div class="section-icon">🏭</div>
+      <h2>7. Proveedores</h2>
+      <span class="section-url">/proveedores/</span>
+    </div>
+    <div class="section-body">
+      <p>Registrá las empresas o personas que te proveen mercadería. Los proveedores se vinculan a los productos y al sistema de códigos de barras.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Nombre</strong></td><td>Razón social o nombre comercial del proveedor.</td></tr>
+          <tr><td><strong>Contacto</strong></td><td>Nombre de la persona de contacto.</td></tr>
+          <tr><td><strong>Teléfono / Email</strong></td><td>Datos de comunicación directa.</td></tr>
+          <tr><td><strong>CUIT</strong></td><td>Identificación fiscal (opcional).</td></tr>
+          <tr><td><strong>Notas</strong></td><td>Condiciones comerciales, plazos de pago, observaciones.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info" style="margin-top:16px;">
+        <span class="icon">ℹ️</span>
+        <span>Los primeros 3 dígitos del código de barras de una unidad corresponden al número de proveedor. Esto permite identificar de qué proveedor provino cada pieza físicamente.</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 8. EMPLEADOS -->
+  <div class="section" id="empleados">
+    <div class="section-header">
+      <div class="section-icon">🧑‍💼</div>
+      <h2>8. Empleados</h2>
+      <span class="section-url">/empleados/</span>
+    </div>
+    <div class="section-body">
+      <p>El módulo de empleados permite registrar al personal de la empresa para fines administrativos y de trazabilidad.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="bullet">📝</span>
+          <div><div class="fl-title">Datos personales y laborales</div><div class="fl-desc">Nombre, DNI, teléfono, fecha de ingreso, cargo y observaciones.</div></div>
+        </li>
+        <li>
+          <span class="bullet">🏷️</span>
+          <div><div class="fl-title">Trazabilidad de barcodes</div><div class="fl-desc">Cada lote de unidades ingresadas queda vinculado al usuario que las registró en el sistema.</div></div>
+        </li>
+      </ul>
+
+      <div class="warning">
+        <span class="icon">⚠️</span>
+        <span>El módulo de Empleados es informativo. Para dar <strong>acceso al sistema</strong>, debés crear un usuario desde <strong>Administración → Usuarios</strong>.</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 9. DISPLAY -->
+  <div class="section" id="display">
+    <div class="section-header">
+      <div class="section-icon">🖥️</div>
+      <h2>9. Pantalla de exhibición (Display)</h2>
+      <span class="section-url">/display/</span>
+    </div>
+    <div class="section-body">
+      <p>La pantalla de exhibición está diseñada para mostrarse en un <strong>monitor o TV orientada al cliente</strong> (mostrador, sala de espera, etc.). No requiere login — es pública.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="bullet">🏷️</span>
+          <div><div class="fl-title">Catálogo de productos</div><div class="fl-desc">Muestra todos los productos activos con imagen, nombre y precio actualizado en tiempo real.</div></div>
+        </li>
+        <li>
+          <span class="bullet">⭐</span>
+          <div><div class="fl-title">Ticker de productos destacados</div><div class="fl-desc">Cinta animada en la parte superior que desplaza los productos marcados como "Destacado" con su precio. Velocidad constante independientemente de la cantidad de artículos.</div></div>
+        </li>
+        <li>
+          <span class="bullet">🔍</span>
+          <div><div class="fl-title">Modal de detalle</div><div class="fl-desc">El cliente puede hacer click en cualquier producto para ver su imagen ampliada, descripción y precio.</div></div>
+        </li>
+      </ul>
+
+      <div class="tip">
+        <span class="icon">💡</span>
+        <span>Para que un producto aparezca en el ticker, activá el checkbox <strong>"Destacado"</strong> en la ficha del producto. Podés marcar tantos como quieras.</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 10. ADMIN -->
+  <div class="section" id="admin">
+    <div class="section-header">
+      <div class="section-icon">⚙️</div>
+      <h2>10. Administración del sistema</h2>
+      <span class="section-url">/admin/</span>
+    </div>
+    <div class="section-body">
+
+      <h3 id="usuarios" style="margin:0 0 14px; font-size:1rem; color:#0f3460;">10.1 Gestión de usuarios <span class="role-tag role-admin">Solo Admin</span></h3>
+      <p style="font-size:14px; color:#4a5568; margin-bottom:14px;">Desde <strong>Administración → Usuarios</strong> podés ver, crear, editar y eliminar las cuentas de acceso al sistema.</p>
+
+      <ol class="steps">
+        <li><div class="step-text">Para crear un usuario nuevo, hacé click en <strong>"Nuevo usuario"</strong>.</div></li>
+        <li><div class="step-text">Completá nombre, email (será su usuario de login), contraseña y rol (<strong>admin</strong> o <strong>vendedor</strong>).</div></li>
+        <li><div class="step-text">Para cambiar la contraseña de un usuario, entrá a su edición y completá el campo "Nueva contraseña". Si lo dejás vacío, la contraseña no cambia.</div></li>
+        <li><div class="step-text">Para desactivar un usuario sin eliminarlo, desmarcá "Activo" en la edición. El usuario no podrá iniciar sesión pero su historial de ventas queda intacto.</div></li>
+      </ol>
+
+      <div class="warning">
+        <span class="icon">⚠️</span>
+        <span>No podés eliminar tu propia cuenta de administrador. Si necesitás hacerlo, pedile a otro administrador que lo realice.</span>
+      </div>
+
+      <h3 id="imagenes" style="margin:22px 0 12px; font-size:1rem; color:#0f3460;">10.2 Imágenes de productos</h3>
+      <p style="font-size:14px; color:#4a5568; margin-bottom:12px;">Las imágenes de productos se guardan en la nube a través de <strong>Cloudinary</strong>. Esto garantiza que las fotos no se pierdan aunque el servidor se reinicie.</p>
+      <ul style="font-size:14px; color:#4a5568; padding-left:22px; line-height:2;">
+        <li>Al cargar una imagen en el formulario de producto, se sube automáticamente.</li>
+        <li>Desde celular, el botón de imagen abre la cámara directamente.</li>
+        <li>Los formatos soportados son: JPG, PNG, GIF, WEBP.</li>
+        <li>Si Cloudinary no está configurado, las imágenes se guardan localmente (solo desarrollo).</li>
+      </ul>
+
+      <h3 id="promociones" style="margin:22px 0 12px; font-size:1rem; color:#0f3460;">10.3 Promociones bancarias</h3>
+      <p style="font-size:14px; color:#4a5568;">Podés cargar promociones vigentes (ej: "Banco Nación 3 cuotas sin interés") que aparecen destacadas en el dashboard para que el equipo de ventas las tenga presentes al atender clientes.</p>
+
+    </div>
+  </div>
+
+
+  <!-- TABLA DE ROLES -->
+  <div class="section" id="roles">
+    <div class="section-header">
+      <div class="section-icon">🔑</div>
+      <h2>11. Resumen de permisos por rol</h2>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Función</th>
+            <th style="text-align:center;">👑 Admin</th>
+            <th style="text-align:center;">🏪 Vendedor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Ver inventario</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+          <tr><td>Agregar / editar productos</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Ver y registrar ventas</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+          <tr><td>Cancelar ventas</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Ver clientes</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+          <tr><td>Agregar / editar clientes</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+          <tr><td>Códigos de barras (ingresar unidades)</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Ver dashboard y gráficos</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Gestionar usuarios</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Ver proveedores y empleados</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Configuración del sistema</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td></tr>
+          <tr><td>Pantalla display (pública)</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div class="doc-footer">
+    <strong>GarageAbierto — Sistema de Gestión</strong> · Manual de Usuario v1.0 · Mayo 2026<br>
+    Para soporte técnico, contactá al desarrollador del sistema.
+  </div>
+
+</div>
+</body>
+</html>

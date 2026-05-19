@@ -6,6 +6,7 @@ from app.models.sale import Sale, SaleItem
 from app.models.customer import Customer
 from app.models.user import User
 from app.models.promotion import BankPromotion
+from app.models.company import CompanySettings
 from app.utils import admin_required
 from datetime import date, timedelta
 from sqlalchemy import func
@@ -321,3 +322,26 @@ def cloudinary_info():
         'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
     ))
     return render_template('admin/cloudinary_info.html', configured=configured)
+
+
+@admin_bp.route('/empresa', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def company_settings():
+    """Configuración de marca / white-label de la empresa."""
+    settings = CompanySettings.get()
+    if request.method == 'POST':
+        settings.company_name  = request.form.get('company_name', '').strip() or settings.company_name
+        settings.tagline       = request.form.get('tagline', '').strip()
+        settings.logo_url      = request.form.get('logo_url', '').strip() or None
+        settings.primary_color = request.form.get('primary_color', '#1a5fb4')
+        settings.accent_color  = request.form.get('accent_color', '#2ec4a9')
+        settings.address       = request.form.get('address', '').strip() or None
+        settings.phone         = request.form.get('phone', '').strip() or None
+        settings.whatsapp      = request.form.get('whatsapp', '').strip() or None
+        settings.email         = request.form.get('email', '').strip() or None
+        settings.website       = request.form.get('website', '').strip() or None
+        db.session.commit()
+        flash('✅ Configuración de empresa guardada correctamente.', 'success')
+        return redirect(url_for('admin.company_settings'))
+    return render_template('admin/company.html', settings=settings)

@@ -99,11 +99,21 @@ def create_app():
 
     # Auto-create any new tables (safe: does not drop existing ones)
     with app.app_context():
-        from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion, ProductUnit  # noqa
+        from app.models import User, Product, Category, Supplier, Customer, Employee, Sale, SaleItem, BankPromotion, ProductUnit, CompanySettings  # noqa
         db.create_all()
 
         # ── Migraciones de columnas nuevas (ALTER TABLE si no existen) ──────
         _run_column_migrations(db)
+
+    # ── Context processor: inject company settings into every template ──
+    from app.models.company import CompanySettings
+
+    @app.context_processor
+    def inject_company():
+        try:
+            return {'company': CompanySettings.get()}
+        except Exception:
+            return {'company': None}
 
     # Custom Jinja2 filters
     @app.template_filter('currency')

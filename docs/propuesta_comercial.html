@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta Comercial — Sistema GarageAbierto</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #1a1a2e;
+    background: #f4f6fb;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 30px 80px; }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 60%, #0f0f1a 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 70px 55px 55px;
+    margin-bottom: 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
+  }
+  .cover::after {
+    content: '';
+    position: absolute; bottom: -100px; left: -50px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%);
+  }
+  .cover-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin-bottom: 18px;
+  }
+  .cover h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  .cover h1 .gold { color: #d4af37; }
+  .cover .tagline {
+    font-size: 1.15rem;
+    color: #a0aec0;
+    max-width: 560px;
+    margin-bottom: 40px;
+  }
+  .cover-divider {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, #d4af37, transparent);
+    margin: 28px 0;
+  }
+  .cover-for {
+    font-size: 13px;
+    color: #718096;
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .cover-for span {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #cbd5e0;
+  }
+
+  /* ── SECTION ── */
+  .sec {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .sec-head {
+    padding: 22px 30px;
+    background: linear-gradient(90deg, #f7f9fc, #fff);
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .sec-icon {
+    width: 46px; height: 46px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #0f3460, #1a1a2e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+  }
+  .sec-head h2 { font-size: 1.2rem; font-weight: 800; color: #1a1a2e; }
+  .sec-head .sec-sub { font-size: 13px; color: #718096; margin-top: 2px; }
+  .sec-body { padding: 26px 30px; }
+
+  /* ── Pain points ── */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .pain-card {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 12px;
+  }
+  .pain-card .pi { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .pain-card .pt { font-weight: 600; font-size: 14px; color: #c53030; }
+  .pain-card .pd { font-size: 13px; color: #744210; margin-top: 3px; }
+
+  /* ── Solution items ── */
+  .sol-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .sol-card {
+    background: #f0fff4;
+    border: 1px solid #c6f6d5;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    gap: 13px;
+  }
+  .sol-card .si { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .sol-card .st { font-weight: 700; font-size: 14px; color: #276749; }
+  .sol-card .sd { font-size: 13px; color: #2d6a4f; margin-top: 4px; }
+
+  /* ── Feature highlight ── */
+  .feat-row {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f4f8;
+    align-items: flex-start;
+  }
+  .feat-row:last-child { border-bottom: none; }
+  .feat-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .feat-title { font-weight: 700; font-size: 14.5px; color: #1a1a2e; }
+  .feat-desc { font-size: 13.5px; color: #4a5568; margin-top: 3px; }
+  .feat-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .badge-excl { background: #fef9e7; border: 1px solid #f7dc6f; color: #7d6608; }
+  .badge-std { background: #eaf4ff; border: 1px solid #90cdf4; color: #1a365d; }
+
+  /* ── PRICING ── */
+  .price-hero {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    border-radius: 14px;
+    color: #fff;
+    padding: 40px 36px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-hero::before {
+    content: '';
+    position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 150px;
+    background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+  }
+  .price-hero .ph-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #d4af37;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .price-hero .ph-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .price-hero .ph-amount {
+    font-size: 3.4rem;
+    font-weight: 900;
+    color: #d4af37;
+    line-height: 1;
+    margin: 14px 0;
+  }
+  .price-hero .ph-amount sup { font-size: 1.6rem; vertical-align: super; }
+  .price-hero .ph-amount sub { font-size: 1.2rem; }
+  .price-hero .ph-note { font-size: 13px; color: #a0aec0; }
+
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .price-card {
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .price-card.featured {
+    border-color: #d4af37;
+    background: linear-gradient(180deg, #fffbeb, #fff);
+  }
+  .price-card .pc-badge {
+    position: absolute;
+    top: -13px; left: 50%; transform: translateX(-50%);
+    background: #d4af37;
+    color: #1a1a2e;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .price-card .pc-name { font-size: 1rem; font-weight: 800; color: #1a1a2e; margin-bottom: 6px; }
+  .price-card .pc-price {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #0f3460;
+    line-height: 1.1;
+    margin: 12px 0 4px;
+  }
+  .price-card .pc-period { font-size: 12px; color: #718096; margin-bottom: 16px; }
+  .price-card ul {
+    list-style: none;
+    text-align: left;
+    padding: 0;
+    font-size: 13px;
+    color: #4a5568;
+  }
+  .price-card ul li {
+    padding: 5px 0;
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #f0f4f8;
+  }
+  .price-card ul li:last-child { border-bottom: none; }
+  .price-card ul li::before { content: '✓'; color: #38a169; font-weight: 700; flex-shrink: 0; }
+
+  /* ── One-time ── */
+  .onetime-table { width: 100%; border-collapse: collapse; }
+  .onetime-table th {
+    background: #f7f9fc;
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 13px;
+    color: #4a5568;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .onetime-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 13.5px;
+    color: #2d3748;
+  }
+  .onetime-table .price-col {
+    font-weight: 700;
+    color: #0f3460;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .onetime-table tfoot td {
+    border-top: 2px solid #1a1a2e;
+    padding-top: 14px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* ── Comparison ── */
+  .vs-table { width: 100%; border-collapse: collapse; }
+  .vs-table th {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .vs-table th:first-child { text-align: left; }
+  .vs-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 13px;
+    text-align: center;
+  }
+  .vs-table td:first-child { text-align: left; font-weight: 500; color: #2d3748; }
+  .vs-table .col-sys { background: #f0fff4; }
+  .vs-table tr:hover td { background: #fafafa; }
+  .vs-table tr:hover td.col-sys { background: #e8fdf0; }
+  .check { color: #38a169; font-weight: 700; font-size: 16px; }
+  .cross { color: #e53e3e; font-weight: 700; font-size: 16px; }
+  .partial { color: #d69e2e; font-weight: 700; }
+
+  /* ── ROI ── */
+  .roi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .roi-card {
+    background: linear-gradient(180deg, #f7f9fc, #fff);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .roi-card .ri { font-size: 28px; margin-bottom: 8px; }
+  .roi-card .rn { font-size: 1.6rem; font-weight: 900; color: #0f3460; }
+  .roi-card .rl { font-size: 12px; color: #718096; margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .roi-card .rd { font-size: 12.5px; color: #4a5568; margin-top: 6px; }
+
+  /* ── Testimonial / quote ── */
+  .quote-box {
+    background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+    border-left: 4px solid #0f3460;
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-style: italic;
+    color: #2d3748;
+    font-size: 14.5px;
+  }
+  .quote-box .qauthor { font-style: normal; font-weight: 700; font-size: 13px; color: #0f3460; margin-top: 10px; }
+
+  /* ── CTA ── */
+  .cta-block {
+    background: linear-gradient(135deg, #d4af37, #c49b2e);
+    border-radius: 14px;
+    padding: 36px 36px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .cta-block h2 { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; margin-bottom: 12px; }
+  .cta-block p { font-size: 14px; color: #744210; max-width: 500px; margin: 0 auto 22px; }
+  .cta-btn {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 13px 32px;
+    border-radius: 10px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    text-align: center;
+    padding: 28px 0 10px;
+    font-size: 12px;
+    color: #a0aec0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 40px;
+  }
+  .highlight { color: #d4af37; font-weight: 700; }
+  .big-text { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; }
+  p + p { margin-top: 10px; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .wrap { padding: 0; max-width: 100%; }
+    .cover { border-radius: 0; page-break-after: always; }
+    .sec, .price-hero, .cta-block { page-break-inside: avoid; }
+    .price-grid { grid-template-columns: repeat(3, 1fr); }
+    .roi-grid { grid-template-columns: repeat(3, 1fr); }
+    a { color: inherit; text-decoration: none; }
+  }
+  @page { margin: 18mm 15mm; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-eyebrow">✦ Propuesta Comercial Exclusiva</div>
+    <h1>El sistema que tu<br>negocio <span class="gold">ya necesitaba.</span></h1>
+    <p class="tagline">Control total de ventas, stock, clientes y empleados en una sola plataforma — diseñada específicamente para negocios argentinos que quieren crecer en serio.</p>
+    <div class="cover-divider"></div>
+    <div class="cover-for">
+      <span>🏪 Comercios minoristas</span>
+      <span>🔧 Ferreterías y repuestos</span>
+      <span>👗 Indumentaria</span>
+      <span>🛒 Almacenes y distribuidoras</span>
+      <span>📦 Depósitos y mayoristas</span>
+    </div>
+  </div>
+
+
+  <!-- EL PROBLEMA -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">😤</div>
+      <div>
+        <h2>¿Te suena familiar alguna de estas situaciones?</h2>
+        <div class="sec-sub">Los problemas que le cuestan plata a tu negocio todos los días</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div class="pain-grid">
+        <div class="pain-card">
+          <span class="pi">📋</span>
+          <div>
+            <div class="pt">El inventario es un desastre</div>
+            <div class="pd">No sabés cuánto tenés, te quedás sin stock sin darte cuenta, o pagás por mercadería que ya tenés.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <span class="pi">🧾</span>
+          <div>
+            <div class="pt">Las ventas se registran en papel o Excel</div>
+            <div class="pd">Los cuadernos se pierden, los errores de suma duelen, y a fin del mes no sabés exactamente cuánto ganaste.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <span class="pi">🔍</span>
+          <div>
+            <div class="pt">Sin trazabilidad de productos</div>
+            <div class="pd">Un cliente pide garantía y no podés saber qué vendiste, cuándo, ni de qué partida era. Imagen comprometida.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <span class="pi">📊</span>
+          <div>
+            <div class="pt">Cero datos para tomar decisiones</div>
+            <div class="pd">¿Cuál es tu producto más rentable? ¿Tu margen real? ¿Cuánto vendiste vs el mes anterior? Hoy no lo sabés.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <span class="pi">👁️</span>
+          <div>
+            <div class="pt">Los empleados no tienen visibilidad</div>
+            <div class="pd">Preguntan precios, buscan en papeles, no pueden responder rápido al cliente. Cada minuto de demora, una venta perdida.</div>
+          </div>
+        </div>
+        <div class="pain-card">
+          <span class="pi">💸</span>
+          <div>
+            <div class="pt">Pagás sistemas caros que no usás</div>
+            <div class="pd">O te resignás a usar herramientas genéricas que no se adaptan a la realidad de tu negocio argentino.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- LA SOLUCIÓN -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">✅</div>
+      <div>
+        <h2>GarageAbierto resuelve todo eso.</h2>
+        <div class="sec-sub">Un sistema web completo, en la nube, sin instalaciones, sin sorpresas</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div class="sol-grid">
+        <div class="sol-card">
+          <span class="si">📦</span>
+          <div>
+            <div class="st">Stock siempre actualizado</div>
+            <div class="sd">Cada venta descuenta el stock en tiempo real. Alertas automáticas cuando llegás al mínimo.</div>
+          </div>
+        </div>
+        <div class="sol-card">
+          <span class="si">💰</span>
+          <div>
+            <div class="st">Ventas en segundos</div>
+            <div class="sd">Buscás por nombre, SKU o código de barras, agregás items, aplicás descuento y confirmás. Todo en menos de un minuto.</div>
+          </div>
+        </div>
+        <div class="sol-card">
+          <span class="si">📈</span>
+          <div>
+            <div class="st">Dashboard gerencial real</div>
+            <div class="sd">Ingresos del día, del mes, comparativa vs mes anterior, margen bruto, ticket promedio, top productos. Datos para decidir.</div>
+          </div>
+        </div>
+        <div class="sol-card">
+          <span class="si">🏷️</span>
+          <div>
+            <div class="st">Trazabilidad por unidad física</div>
+            <div class="sd">Cada pieza tiene su propio código de barras único de 16 dígitos. Sabés exactamente qué vendiste, cuándo y de qué partida.</div>
+          </div>
+        </div>
+        <div class="sol-card">
+          <span class="si">🖥️</span>
+          <div>
+            <div class="st">Pantalla para el cliente</div>
+            <div class="sd">Display de catálogo con precios para poner en mostrador o TV. Los clientes ven los productos mientras esperan.</div>
+          </div>
+        </div>
+        <div class="sol-card">
+          <span class="si">☁️</span>
+          <div>
+            <div class="st">En la nube, sin mantenimiento</div>
+            <div class="sd">Funciona desde cualquier dispositivo con internet. Sin servidores propios, sin actualizaciones manuales, sin IT.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- QUÉ INCLUYE -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">🧩</div>
+      <div>
+        <h2>Todo lo que incluye el sistema</h2>
+        <div class="sec-sub">Módulos completos, listos para usar desde el día uno</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div class="feat-row">
+        <div class="feat-icon">📊</div>
+        <div>
+          <div class="feat-title">Dashboard con KPIs y gráficos</div>
+          <div class="feat-desc">Ventas del día, del mes, comparativa mensual, ticket promedio, margen bruto estimado, top 8 productos y alertas de stock bajo. Gráfico de barras diario (30 días) y mensual (6 meses).</div>
+        </div>
+        <span class="feat-badge badge-excl">⭐ Exclusivo</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">📦</div>
+        <div>
+          <div class="feat-title">Gestión de Inventario completa</div>
+          <div class="feat-desc">Alta, edición y baja de productos con SKU, imagen, marca, categoría, proveedor, precio de venta, costo, stock y stock mínimo. Filtros y buscador en tiempo real.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🏷️</div>
+        <div>
+          <div class="feat-title">Sistema de códigos de barras por unidad</div>
+          <div class="feat-desc">Generación de barcodes únicos CODE128 de 16 dígitos por cada unidad física recibida. Estructura inteligente: categoría + proveedor + producto + secuencia global. Imprimibles desde el navegador.</div>
+        </div>
+        <span class="feat-badge badge-excl">⭐ Exclusivo</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">💰</div>
+        <div>
+          <div class="feat-title">Punto de venta (POS)</div>
+          <div class="feat-desc">Búsqueda por nombre, SKU, marca o código de barras. Carrito de compras, descuentos por porcentaje, múltiples métodos de pago, vinculación de cliente, notas. Descuento automático de stock al confirmar.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🧾</div>
+        <div>
+          <div class="feat-title">Historial de ventas y comprobantes</div>
+          <div class="feat-desc">Listado con filtros por estado, método de pago y rango de fechas. Detalle de cada venta. Factura imprimible. Cancelación de venta con restauración automática de stock.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">👥</div>
+        <div>
+          <div class="feat-title">Base de clientes</div>
+          <div class="feat-desc">CRUD completo con nombre, email, teléfono y dirección. Historial de compras por cliente. Vinculación a ventas para seguimiento.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🏭</div>
+        <div>
+          <div class="feat-title">Gestión de Proveedores</div>
+          <div class="feat-desc">Base de datos de proveedores vinculada a productos y barcodes. Datos de contacto, CUIT y condiciones comerciales.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🖥️</div>
+        <div>
+          <div class="feat-title">Pantalla de exhibición para clientes</div>
+          <div class="feat-desc">Display web con catálogo de productos, precios actualizados en tiempo real y ticker animado de productos destacados. Para TV o monitor en el mostrador.</div>
+        </div>
+        <span class="feat-badge badge-excl">⭐ Exclusivo</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🔐</div>
+        <div>
+          <div class="feat-title">Roles y usuarios múltiples</div>
+          <div class="feat-desc">Dos roles: Administrador (acceso total) y Vendedor (ventas e inventario). Podés tener tantos usuarios como necesites. Contraseñas seguras con hash.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+      <div class="feat-row">
+        <div class="feat-icon">🏦</div>
+        <div>
+          <div class="feat-title">Promociones bancarias</div>
+          <div class="feat-desc">Cargá las promociones vigentes (cuotas sin interés, descuentos con tarjeta) para que el equipo de ventas las tenga siempre a mano en el dashboard.</div>
+        </div>
+        <span class="feat-badge badge-std">Incluido</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- INVERSIÓN INICIAL -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">💎</div>
+      <div>
+        <h2>Inversión inicial — Pago único</h2>
+        <div class="sec-sub">Todo lo que se desarrolla una sola vez para poner el sistema en marcha</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <table class="onetime-table">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Descripción</th>
+            <th style="text-align:right;">Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🧩 Licencia del sistema base</strong></td>
+            <td>Plataforma completa con todos los módulos: ventas, inventario, clientes, barcodes, display, dashboard, usuarios.</td>
+            <td class="price-col">$350.000</td>
+          </tr>
+          <tr>
+            <td><strong>⚙️ Puesta en marcha y configuración</strong></td>
+            <td>Setup en Railway (nube), base de datos, dominio personalizado, carga de categorías y proveedores iniciales.</td>
+            <td class="price-col">$80.000</td>
+          </tr>
+          <tr>
+            <td><strong>📥 Migración de datos</strong></td>
+            <td>Importación de productos existentes desde Excel, planillas u otro sistema (hasta 500 productos incluidos).</td>
+            <td class="price-col">$60.000</td>
+          </tr>
+          <tr>
+            <td><strong>🎓 Capacitación inicial</strong></td>
+            <td>2 horas de capacitación presencial o por videollamada para todo el equipo. Manual de usuario imprimible incluido.</td>
+            <td class="price-col">$50.000</td>
+          </tr>
+          <tr>
+            <td><strong>🖼️ Configuración Cloudinary</strong></td>
+            <td>Setup de almacenamiento de imágenes en la nube para que las fotos de productos nunca se pierdan.</td>
+            <td class="price-col">$20.000</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" style="text-align:right; font-weight:700; font-size:15px; color:#1a1a2e;">TOTAL INVERSIÓN INICIAL</td>
+            <td class="price-col" style="font-size:1.3rem; color:#0f3460;">$560.000 ARS</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="font-size:12px; color:#718096; padding-top:8px;">Precios en pesos argentinos. IVA no incluido. Vigencia de lista: 30 días desde la fecha de esta propuesta.</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- MANTENIMIENTO -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">🔄</div>
+      <div>
+        <h2>Planes de mantenimiento mensual</h2>
+        <div class="sec-sub">Elegí el nivel de soporte que mejor se adapta a tu operación</div>
+      </div>
+    </div>
+    <div class="sec-body">
+
+      <div class="price-grid">
+
+        <div class="price-card">
+          <div class="pc-name">🥉 Básico</div>
+          <div class="pc-price">$35.000</div>
+          <div class="pc-period">por mes</div>
+          <ul>
+            <li>Hosting en Railway incluido</li>
+            <li>Monitoreo de disponibilidad</li>
+            <li>Backups semanales de BD</li>
+            <li>Soporte por WhatsApp (48h)</li>
+            <li>1 ajuste menor por mes</li>
+          </ul>
+        </div>
+
+        <div class="price-card featured">
+          <div class="pc-badge">⭐ MÁS ELEGIDO</div>
+          <div class="pc-name">🥇 Profesional</div>
+          <div class="pc-price">$65.000</div>
+          <div class="pc-period">por mes</div>
+          <ul>
+            <li>Todo lo del plan Básico</li>
+            <li>Backups diarios de BD</li>
+            <li>Soporte prioritario (24h)</li>
+            <li>Actualizaciones de seguridad</li>
+            <li>3 mejoras/mes (precios, campos, vistas)</li>
+            <li>Ajustes según inflación de precios</li>
+            <li>1 funcionalidad nueva por trimestre</li>
+          </ul>
+        </div>
+
+        <div class="price-card">
+          <div class="pc-name">💼 Premium</div>
+          <div class="pc-price">$110.000</div>
+          <div class="pc-period">por mes</div>
+          <ul>
+            <li>Todo lo del plan Profesional</li>
+            <li>Soporte telefónico ilimitado</li>
+            <li>Desarrollo a medida ilimitado</li>
+            <li>Capacitación mensual del equipo</li>
+            <li>Integraciones con terceros (MercadoPago, etc.)</li>
+            <li>SLA de respuesta: 4 horas</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div style="background:#f7f9fc; border-radius:10px; padding:16px 20px; border:1px solid #e2e8f0; font-size:13px; color:#4a5568;">
+        <strong style="color:#0f3460;">💡 ¿Qué incluye "Hosting en Railway"?</strong> — Railway es la plataforma en la nube donde vive el sistema. El costo del servidor ($10-15 USD/mes) está contemplado en todos los planes de mantenimiento. No hay costos ocultos.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- VS COMPETENCIA -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">⚖️</div>
+      <div>
+        <h2>¿Por qué no usar algo genérico?</h2>
+        <div class="sec-sub">Comparativa honesta con otras alternativas del mercado</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <table class="vs-table">
+        <thead>
+          <tr>
+            <th>Funcionalidad</th>
+            <th class="col-sys">✅ GarageAbierto</th>
+            <th>Excel / Papel</th>
+            <th>Sistemas genéricos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Adaptado a tu negocio</td>
+            <td class="col-sys"><span class="check">✓ 100%</span></td>
+            <td><span class="partial">~ Parcial</span></td>
+            <td><span class="cross">✗ Genérico</span></td>
+          </tr>
+          <tr>
+            <td>Dashboard con margen bruto</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">~ Costo extra</span></td>
+          </tr>
+          <tr>
+            <td>Barcodes por unidad física</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗ No existe</span></td>
+          </tr>
+          <tr>
+            <td>Display para cliente en TV</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="cross">✗</span></td>
+          </tr>
+          <tr>
+            <td>Funciona desde el celular</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">~ Depende</span></td>
+          </tr>
+          <tr>
+            <td>Sin instalación ni IT</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="partial">~ Parcial</span></td>
+            <td><span class="cross">✗ Generalmente no</span></td>
+          </tr>
+          <tr>
+            <td>Imágenes en la nube</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">~ Costo extra</span></td>
+          </tr>
+          <tr>
+            <td>Costo mensual razonable</td>
+            <td class="col-sys"><span class="check">✓ Desde $35.000</span></td>
+            <td><span class="check">✓ Gratis</span></td>
+            <td><span class="cross">✗ USD 50-300/mes</span></td>
+          </tr>
+          <tr>
+            <td>Soporte en castellano local</td>
+            <td class="col-sys"><span class="check">✓</span></td>
+            <td><span class="cross">✗</span></td>
+            <td><span class="partial">~ Tickets</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ROI -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">📈</div>
+      <div>
+        <h2>¿Cuánto te cuesta NO tener este sistema?</h2>
+        <div class="sec-sub">El retorno de la inversión es más rápido de lo que pensás</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div class="roi-grid" style="margin-bottom:24px;">
+        <div class="roi-card">
+          <div class="ri">⏱️</div>
+          <div class="rn">2 hs/día</div>
+          <div class="rl">Tiempo recuperado</div>
+          <div class="rd">Menos tiempo buscando precios, contando stock y cerrando caja.</div>
+        </div>
+        <div class="roi-card">
+          <div class="ri">📉</div>
+          <div class="rn">-30%</div>
+          <div class="rl">Menos pérdidas de stock</div>
+          <div class="rd">Las alertas de stock mínimo evitan quedarte sin mercadería en el momento de vender.</div>
+        </div>
+        <div class="roi-card">
+          <div class="ri">💡</div>
+          <div class="rn">+15%</div>
+          <div class="rl">Margen más preciso</div>
+          <div class="rd">Conocer tu costo vs venta real te permite tomar decisiones de precio con datos, no con intuición.</div>
+        </div>
+      </div>
+
+      <div class="quote-box">
+        "Un negocio que factura $500.000 al mes y mejora su margen bruto un 3% con mejores decisiones de precio, recupera la inversión del sistema en <strong>menos de 3 meses</strong>. Sin contar el tiempo ahorrado."
+        <div class="qauthor">— Estimación conservadora basada en comercios similares</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- CÓMO EMPEZAMOS -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">🚀</div>
+      <div>
+        <h2>¿Cómo arrancamos?</h2>
+        <div class="sec-sub">Del acuerdo al sistema funcionando en menos de una semana</div>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div style="display:flex; flex-direction:column; gap:0;">
+
+        <div style="display:flex; gap:20px; padding:16px 0; border-bottom:1px solid #f0f4f8; align-items:flex-start;">
+          <div style="width:36px; height:36px; background:linear-gradient(135deg,#d4af37,#c49b2e); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:#1a1a2e; font-size:15px; flex-shrink:0;">1</div>
+          <div>
+            <div style="font-weight:700; color:#1a1a2e; font-size:14px;">Reunión inicial (1 hora)</div>
+            <div style="font-size:13.5px; color:#4a5568; margin-top:3px;">Analizamos tu operación: qué productos manejás, cuántos usuarios vas a tener, si ya tenés un listado de stock, qué necesitás personalizar.</div>
+          </div>
+          <div style="margin-left:auto; font-size:12px; color:#718096; white-space:nowrap; padding-top:3px;">Día 0</div>
+        </div>
+
+        <div style="display:flex; gap:20px; padding:16px 0; border-bottom:1px solid #f0f4f8; align-items:flex-start;">
+          <div style="width:36px; height:36px; background:linear-gradient(135deg,#d4af37,#c49b2e); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:#1a1a2e; font-size:15px; flex-shrink:0;">2</div>
+          <div>
+            <div style="font-weight:700; color:#1a1a2e; font-size:14px;">Configuración y deploy</div>
+            <div style="font-size:13.5px; color:#4a5568; margin-top:3px;">Ponemos en marcha el servidor en la nube, configuramos el dominio, cargamos categorías, proveedores y el listado inicial de productos.</div>
+          </div>
+          <div style="margin-left:auto; font-size:12px; color:#718096; white-space:nowrap; padding-top:3px;">Días 1-2</div>
+        </div>
+
+        <div style="display:flex; gap:20px; padding:16px 0; border-bottom:1px solid #f0f4f8; align-items:flex-start;">
+          <div style="width:36px; height:36px; background:linear-gradient(135deg,#d4af37,#c49b2e); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:#1a1a2e; font-size:15px; flex-shrink:0;">3</div>
+          <div>
+            <div style="font-weight:700; color:#1a1a2e; font-size:14px;">Carga de datos y pruebas</div>
+            <div style="font-size:13.5px; color:#4a5568; margin-top:3px;">Importamos tu inventario existente, creamos los usuarios del equipo, y hacemos pruebas de ventas y barcodes para validar todo.</div>
+          </div>
+          <div style="margin-left:auto; font-size:12px; color:#718096; white-space:nowrap; padding-top:3px;">Días 3-4</div>
+        </div>
+
+        <div style="display:flex; gap:20px; padding:16px 0; align-items:flex-start;">
+          <div style="width:36px; height:36px; background:linear-gradient(135deg,#d4af37,#c49b2e); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:#1a1a2e; font-size:15px; flex-shrink:0;">4</div>
+          <div>
+            <div style="font-weight:700; color:#1a1a2e; font-size:14px;">Capacitación y lanzamiento 🎉</div>
+            <div style="font-size:13.5px; color:#4a5568; margin-top:3px;">Capacitamos al equipo en 2 horas. Entregamos el manual imprimible. El sistema queda operativo 100%. Soporte de seguimiento las primeras dos semanas.</div>
+          </div>
+          <div style="margin-left:auto; font-size:12px; color:#718096; white-space:nowrap; padding-top:3px;">Día 5-7</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PREGUNTAS FRECUENTES -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-icon">❓</div>
+      <div>
+        <h2>Preguntas frecuentes</h2>
+      </div>
+    </div>
+    <div class="sec-body">
+
+      <div style="border-bottom:1px solid #f0f4f8; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Necesito computadora propia para usarlo?</div>
+        <div style="font-size:13.5px; color:#4a5568;">No. El sistema funciona desde cualquier dispositivo con internet: PC, notebook, tablet o celular. No requiere instalación.</div>
+      </div>
+
+      <div style="border-bottom:1px solid #f0f4f8; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Qué pasa si se va internet?</div>
+        <div style="font-size:13.5px; color:#4a5568;">Como todo sistema web, requiere conexión a internet para funcionar. Recomendamos tener una conexión de respaldo (datos móviles) para casos de corte.</div>
+      </div>
+
+      <div style="border-bottom:1px solid #f0f4f8; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Cuántos usuarios puedo tener?</div>
+        <div style="font-size:13.5px; color:#4a5568;">Usuarios ilimitados. Podés tener 2 o 20 empleados usando el sistema al mismo tiempo sin costo adicional.</div>
+      </div>
+
+      <div style="border-bottom:1px solid #f0f4f8; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Mis datos están seguros?</div>
+        <div style="font-size:13.5px; color:#4a5568;">Sí. La base de datos está en Railway (infraestructura de Amazon AWS), con backups automáticos. Las imágenes están en Cloudinary (redundancia geográfica). Conexiones cifradas con HTTPS.</div>
+      </div>
+
+      <div style="border-bottom:1px solid #f0f4f8; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Puedo agregar funcionalidades a medida?</div>
+        <div style="font-size:13.5px; color:#4a5568;">Sí. El sistema fue construido modularmente. Podemos agregar integración con MercadoPago, reportes de AFIP, notificaciones por WhatsApp, o cualquier otra necesidad específica de tu negocio.</div>
+      </div>
+
+      <div>
+        <div style="font-weight:700; color:#0f3460; margin-bottom:5px;">¿Qué pasa si decido no renovar el mantenimiento?</div>
+        <div style="font-size:13.5px; color:#4a5568;">El sistema sigue funcionando. El mantenimiento no es obligatorio, pero sin él el hosting y los backups corren por tu cuenta. Te entregamos toda la documentación técnica para que otro desarrollador pueda continuarlo.</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <h2>Tomá el control de tu negocio hoy.</h2>
+    <p>Cada día que pasa sin datos precisos es plata que se escapa. La inversión inicial se recupera en meses. El orden y la claridad son permanentes.</p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <a class="cta-btn" href="#">📞 Quiero una demo gratuita</a>
+      <a class="cta-btn" style="background:#fff; color:#1a1a2e; border:2px solid #1a1a2e;" href="#">💬 Consultar por WhatsApp</a>
+    </div>
+  </div>
+
+
+  <div class="doc-footer">
+    <strong>GarageAbierto — Sistema de Gestión para PyMEs</strong><br>
+    Propuesta comercial · Mayo 2026 · Precios en pesos argentinos · Vigencia 30 días<br>
+    <em>Esta propuesta es confidencial y fue preparada exclusivamente para el destinatario.</em>
+  </div>
+
+</div>
+</body>
+</html>

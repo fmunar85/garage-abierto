@@ -18,10 +18,16 @@
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
-        <i class="bi bi-droplet-fill brand-icon"></i>
+        {% if company and company.logo_url %}
+          <img src="{{ company.logo_url }}" alt="Logo" style="height:38px; object-fit:contain; max-width:120px;">
+        {% else %}
+          <i class="bi bi-droplet-fill brand-icon"></i>
+        {% endif %}
         <div>
-          <span class="brand-name">GARAGE</span>
-          <span class="brand-sub">ABIERTO</span>
+          <span class="brand-name">{{ company.company_name.upper() if company else 'MI EMPRESA' }}</span>
+          {% if company and company.tagline %}
+          <span class="brand-sub">{{ company.tagline }}</span>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -100,6 +106,11 @@
       <li class="{% if request.endpoint and request.endpoint.startswith('admin.users') %}active{% endif %}">
         <a href="{{ url_for('admin.users') }}">
           <i class="bi bi-shield-lock"></i><span>Usuarios</span>
+        </a>
+      </li>
+      <li class="{% if request.endpoint == 'admin.company_settings' %}active{% endif %}">
+        <a href="{{ url_for('admin.company_settings') }}">
+          <i class="bi bi-building"></i><span>Empresa</span>
         </a>
       </li>
       {% endif %}
